@@ -1,32 +1,78 @@
 # BART / IGT experiment
 
-A local PsychoPy experiment with Persian and English presentation. Participants complete a
-Self-Assessment Manikin (SAM) survey, watch a negative, positive or neutral video,
-complete a second survey, and perform the Iowa Gambling Task (IGT) and Balloon
-Analogue Risk Task (BART). Results are written locally to Excel.
+A bilingual browser experiment for the Self-Assessment Manikin (SAM), video,
+Iowa Gambling Task (IGT), and Balloon Analogue Risk Task (BART). The complete
+interface has been rebuilt for the browser; PsychoPy remains an optional desktop
+reference. The browser version needs no PsychoPy, VLC, packages or font installation.
+Results stay local and can be downloaded as CSV, a compatible JSONL journal, and
+a detailed session record.
 
-This is research software: review the study settings and validate the actual
-workstation before collecting participant data. Defaults are five trials per task.
+## Run in your browser
 
-## English screenshots
+From the repository root, start a local static server:
 
-Real PsychoPy-rendered English interface frames, captured on a disposable
-GitHub-hosted runner with scripted demonstration input. No participant data or
-local PsychoPy installation was used. These demonstrate presentation, not
-hardware timing, audio, video playback or a complete participant session.
+```sh
+python3 -m http.server 8765 --bind 127.0.0.1
+```
 
-![English SAM survey](docs/screenshots/sam-selected.png)
+Open [the local experiment](http://127.0.0.1:8765/web/). English is the browser
+default; choose Persian before starting. If Node is already available,
+`node web/server.js` is an alternative launcher. No hosted service is required.
 
-![English IGT card selection](docs/screenshots/igt-choice.png)
+Study settings remain in `config.py`. After changing them, run
+`python3 scripts/export_browser_config.py` to regenerate browser configuration.
+Defaults remain five trials per task. Download results after each session.
 
-![English IGT selected card outcome](docs/screenshots/igt-feedback.png)
+See [browser setup, configuration, recovery and protocol differences](docs/browser-experiment.md).
+Validate browser timing, input and media on the actual workstation before
+collecting participant data; the redesign is a new presentation version.
 
-![English BART balloon play](docs/screenshots/bart-balloon.png)
+## Actual browser screenshots
 
-See the [full screenshot gallery and capture details](docs/screenshots/README.md)
-and the [task design decisions](docs/ui-design.md).
+Captured from the running application with scripted synthetic input, using the
+existing Chrome browser without installing experiment software. These are actual
+browser renders, not mockups or participant data.
 
-## Setup and running
+### Session setup and instructions
+
+![English session setup with padded dropdown arrows](docs/screenshots/browser/english-setup.png)
+
+![Structured English balloon task instructions](docs/screenshots/browser/english-bart-instructions.png)
+
+### Ratings and card choices
+
+![English SAM ratings](docs/screenshots/browser/english-survey.png)
+
+![English IGT deck selection](docs/screenshots/browser/english-igt-choice.png)
+
+![English IGT selected card with a light result face](docs/screenshots/browser/english-igt-reveal.png)
+
+### Balloon inflation
+
+Only the balloon body grows upward. Its bottom attachment, knot and rope stay
+fixed. The examples below show zero and twenty pumps at the same viewport size.
+They use a documented no-burst test fixture to make the geometry comparison
+repeatable; they are not naturally sampled participant outcomes.
+
+<img src="docs/screenshots/browser/english-bart-start.png" alt="Balloon before inflation: fixed knot and rope" width="49%"> <img src="docs/screenshots/browser/english-bart-pumped.png" alt="Balloon after twenty pumps: body grows upward with the same knot and rope" width="49%">
+
+<details>
+<summary>Large balloon, Persian phone layout, and completion screen</summary>
+
+![127-pump balloon geometry fixture](docs/screenshots/browser/english-bart-large.png)
+
+<img src="docs/screenshots/browser/persian-bart-instructions-mobile.png" alt="Structured Persian instructions on a phone" width="320"> <img src="docs/screenshots/browser/persian-bart-mobile.png" alt="Persian balloon task on a phone" width="320">
+
+![English completion screen with local result downloads](docs/screenshots/browser/english-completion.png)
+
+</details>
+
+[Full browser gallery and capture provenance](docs/screenshots/browser/README.md).
+The captures demonstrate presentation and scripted flow, not physical timing or
+behavioral equivalence. [Earlier native PsychoPy captures](docs/screenshots/README.md)
+are retained as historical desktop evidence.
+
+## Optional PsychoPy desktop version
 
 Use PsychoPy Standalone **2026.2.4**, or a desktop Python **3.11/3.12** environment
 with PsychoPy installed. Install VLC of the same architecture as your Python

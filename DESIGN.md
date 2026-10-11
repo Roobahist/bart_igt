@@ -1,28 +1,57 @@
-# Task design
+# Browser design system
 
-The owner chose a modern, polished game interface. Apply Impeccable's Operate,
-distill and typography guidance to the existing task objects, preserving content
-and study behavior. The skill source was read at commit
-`c63b8dd7dd5a5f3c32eaabe1af76d0694f863ed2`; its CLI/detectors were not installed
-or run, and no web detector result is claimed for this native Python application.
+Mode: Operate. Direction: a contemporary game surface with restrained chrome,
+large task objects and clear, equally weighted actions. This replaces the previous
+native visual world, following the owner's request. Impeccable's new-work and
+craft-floor guidance informs the design; its unavailable CLI and detectors were
+not run. The implementation is code-led, not matched to an image-generated comp.
 
-- One sans family per language. English uses bundled Regular/Bold Plus Jakarta
-  Sans, registered inside the process; Persian retains its existing IRANSans face.
-  No serif display role, decorative numbering or font installation.
-- Cool light canvas, white revealed faces, saturated blue matching deck backs and
-  a coral balloon. Accent belongs to task objects and feedback, not unrelated UI.
-- Actual four-card choices retain a shallow stack and equal hit areas. A compact
-  geometric card mark replaces the engraved diamond frames. Press state changes
-  the inner edge without moving the target. Feedback stays inside the selected card.
-- The balloon grows on an open, uninterrupted field. No horizontal rule, framing
-  band, measuring graphic, floor or fixed shadow is drawn around its growth area.
-  Title, status and key legends stay to the side. The balloon may occupy most of
-  the viewport height, without an inset stage boundary. The window edge is the only viewport
-  boundary; there is no decoration suggesting a burst threshold.
-- Keep written instructions, trial controls, task distributions and feedback hold
-  unchanged. No entrance animation or added delay in a timed experiment.
-- Verify once in a batched real-render pass, fix findings together, and confirm
-  once. Include zero, twenty and 127-pump BART frames, choice/reveal cards and both
-  desktop layout directions. Headless tests cannot establish behavioral neutrality.
+## Tokens
 
-See `docs/ui-design.md` for protocol implications and capture limits.
+- Canvas `#191e2b`; utility surface `#242b3a`; foreground `#f5f3ed`;
+  secondary `#b9c2d1`; control outline `#4a566b`.
+- Task mint `#bef3d8`, mint ink `#203b30`; coral balloon `#f48978` with rubber
+  shading inside its contour only. No background halos, grid, glass or stage.
+- Revealed card `#f5f3ed`, ink `#243040`, secondary `#596273`;
+  gain `#216746`, loss `#b23f40`.
+- English bundled Plus Jakarta Sans Regular/Bold. Persian bundled IRANSans
+  Regular/Bold. Browser loads fonts through local `@font-face`, never OS installation.
+- Body 15px/1.65; headings 30–76px, tracking -0.035em; tabular money numerals.
+  General radii 9–14px; actual cards 14px; consistent visible focus rings.
+
+## Composition and behavior
+
+Setup pairs a large neutral title with a participant form, not promotional claims.
+Instructions separate task identity from full original content, with localized
+section headings, explicit paragraphs and a bounded reading column. Native select
+arrows use a 16px inset mirrored in RTL. SAM uses light
+image rails to preserve the original drawings with fixed 1–9 value mapping.
+Video remains the visual focus and exposes real playback/error controls.
+
+IGT has four equivalent mint-backed decks with crisp radial geometry, a shallow
+stack and consistent targets. A selected deck turns to a light face with gain and
+loss inside it; motion stays within the existing feedback hold and is removed for
+reduced motion. Desktop uses one row, phone uses two rows without changing deck
+number mapping. Hover never changes hit target position.
+
+BART leaves the growth field open. Branding, title, ordinal progress, current value,
+bank and actions stay to the side on desktop. No frame, header divider, floor,
+shadow, gauge, capacity label or pump counter competes with the balloon. Pump and
+Collect use identical sizing, fill and border. The body grows upward from a fixed
+neck and knot; the rope keeps the same position, length and stroke during pumping.
+Body contours are recalculated in field coordinates instead of scaling one SVG.
+The instruction illustration uses the same shaded rendering. The balloon grows immediately;
+there is no delay that alters opportunities to respond. On phone, status precedes
+an open balloon field and equal actions sit at the viewport bottom.
+
+Completion provides CSV, compatible journal and detailed-session downloads.
+Recovery is explicit on setup; interrupted sessions retain completed responses.
+Accessibility includes native controls, labels, keyboard card activation, radio
+navigation, visible focus, reduced motion, RTL and responsive layouts.
+
+## Evidence
+
+Genuine browser captures: `docs/screenshots/browser/`. Provenance labels synthetic
+input and RNG fixtures. Browser integration checks run the actual session timeline
+and rendering. This is not a claim of physical timing or behavioral equivalence.
+The older native screenshots remain explicitly labeled desktop history.

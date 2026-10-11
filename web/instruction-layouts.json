@@ -1,0 +1,129 @@
+{
+  "en": {
+    "bart": [
+      {
+        "heading": "instruction_goal",
+        "paragraphs": [
+          2
+        ]
+      },
+      {
+        "heading": "instruction_rewards",
+        "paragraphs": [
+          1,
+          1
+        ]
+      },
+      {
+        "heading": "instruction_controls",
+        "paragraphs": [
+          1,
+          1
+        ]
+      },
+      {
+        "heading": "instruction_payment",
+        "paragraphs": [
+          1
+        ]
+      },
+      {
+        "heading": null,
+        "paragraphs": [
+          1
+        ]
+      }
+    ],
+    "igt": [
+      {
+        "heading": "instruction_goal",
+        "paragraphs": [
+          1
+        ]
+      },
+      {
+        "heading": "instruction_choices",
+        "paragraphs": [
+          2,
+          2
+        ]
+      },
+      {
+        "heading": "instruction_payment",
+        "paragraphs": [
+          1
+        ]
+      },
+      {
+        "heading": null,
+        "paragraphs": [
+          1
+        ]
+      }
+    ]
+  },
+  "fa": {
+    "bart": [
+      {
+        "heading": "instruction_goal",
+        "paragraphs": [
+          2
+        ]
+      },
+      {
+        "heading": "instruction_rewards",
+        "paragraphs": [
+          2,
+          2
+        ]
+      },
+      {
+        "heading": "instruction_controls",
+        "paragraphs": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "heading": "instruction_payment",
+        "paragraphs": [
+          1
+        ]
+      },
+      {
+        "heading": null,
+        "paragraphs": [
+          1
+        ]
+      }
+    ],
+    "igt": [
+      {
+        "heading": "instruction_goal",
+        "paragraphs": [
+          1
+        ]
+      },
+      {
+        "heading": "instruction_choices",
+        "paragraphs": [
+          3,
+          2
+        ]
+      },
+      {
+        "heading": "instruction_payment",
+        "paragraphs": [
+          1
+        ]
+      },
+      {
+        "heading": null,
+        "paragraphs": [
+          1
+        ]
+      }
+    ]
+  }
+}
