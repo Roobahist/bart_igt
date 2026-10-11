@@ -30,7 +30,7 @@ python main.py
 
 PsychoPy installation needs platform-specific desktop, graphics and audio support;
 see the [official installation guide](https://psychopy.org/download).
-`main (2).py` remains a compatibility launcher for the same implementation.
+`main.py` is the single application entry point.
 Importing `main` does not open a window or collect participant information.
 
 ## Configuration and controls
@@ -100,7 +100,7 @@ python -m pip install -r requirements-dev.txt
 ruff check .
 ruff format --check .
 python -m unittest discover -s tests -v
-python -m compileall -q main.py 'main (2).py' bart.py igt.py config.py session.py
+python -m compileall -q main.py bart.py igt.py config.py session.py
 pip-audit --strict --no-deps --disable-pip -r requirements-results.txt
 ```
 

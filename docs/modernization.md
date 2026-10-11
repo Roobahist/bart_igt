@@ -9,7 +9,7 @@ agent instructions existed in the repository. No GitHub issues were returned.
 
 | Finding | Priority | Resolution |
 |---|---|---|
-| `main.py` raises IndentationError at line 855 | Critical | Restored runnable orchestration; compile checks cover both launchers |
+| `main.py` raises IndentationError at line 855 | Critical | Restored runnable orchestration; compile checks cover the single main.py entry point |
 | Removed pandas `DataFrame.append` used for every response | High | Replaced direct pandas use with journaled records and openpyxl export |
 | Broad catch around tasks reruns both after an execution error | High | Convert code separately; execute ordered tasks once; propagate failures |
 | Only shutdown saves data; failed window creation can mask original error | High | Per-response durable journal and independent cleanup/export |
@@ -19,7 +19,7 @@ agent instructions existed in the repository. No GitHub issues were returned.
 | Interrupted balloon credits uncollected reward | High | Bank only when collected; test skip after pumping |
 | Pending Enter can also collect a bursting balloon | High | Guard terminal outcomes; one completed record per balloon |
 | BART drops RT despite existing RT column | Medium | Monotonic elapsed time on completed BART trials |
-| Two divergent 900-line launchers and repeated IGT branches | Medium | One compatibility launcher; shared deck replenishment logic |
+| Two divergent 900-line launchers and repeated IGT branches | Medium | Removed duplicate launcher; shared deck replenishment logic |
 | Survey uses `eval` to find known stimuli/configuration | Medium | Explicit stimulus lists and `getattr` for trusted settings |
 | Privileged global keyboard polling and synchronous audio package | Medium | Native PsychoPy Keyboard state and preloaded Sound playback |
 | Missing setup, tooling, regression protection and project guidance | Medium | Dependency files, Ruff, unittest, CI, Dependabot, README and AGENTS |
@@ -29,9 +29,8 @@ agent instructions existed in the repository. No GitHub issues were returned.
 Persian survey labels, media, task order rules, default settings and workbook
 columns/layout remain. Invalid task inputs now raise ValueError instead of returning
 strings or failing inside random calculations. IGT decks reset for a new session.
-Results use new filenames and an additional journal. `main (2).py` now follows the
-canonical 1200×675 window and current video controls rather than its old 800×450
-variant. Sound feedback is asynchronous and polling yields briefly. RT values are
+Results use new filenames and an additional journal. The accidental `main (2).py` duplicate has been removed; launch with `main.py`.
+The canonical window remains 1200×675 with the current video controls. Sound feedback is asynchronous and polling yields briefly. RT values are
 monotonic elapsed trial time; these changes require manual study validation.
 
 Existing historical output is preserved, including its Git tracking. Its sensitivity

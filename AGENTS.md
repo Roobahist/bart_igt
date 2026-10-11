@@ -4,7 +4,7 @@ This is a Persian PsychoPy desktop research experiment, not a web application.
 `main.py` orchestrates SAM → video → SAM → counterbalanced IGT/BART → payout screen.
 `igt.py` and `bart.py` preserve study randomization; `session.py` owns local result
 storage and configuration validation. Assets and study settings live in the
-existing directories and `config.py`. `main (2).py` is only a compatibility launcher.
+existing directories and `config.py`. `main.py` is the single application entry point.
 
 - Preserve column names/order configuration, sparse metadata-first workbook layout,
   task counterbalancing, loss block distributions and burst probabilities.
@@ -21,7 +21,7 @@ existing directories and `config.py`. `main (2).py` is only a compatibility laun
 
 Install `requirements-dev.txt`, then run `ruff check .`, `ruff format --check .`,
 `python -m unittest discover -s tests -v`, and
-`python -m compileall -q main.py 'main (2).py' bart.py igt.py config.py session.py`.
+`python -m compileall -q main.py bart.py igt.py config.py session.py`.
 Audit pinned storage dependencies with
 `pip-audit --strict --no-deps --disable-pip -r requirements-results.txt`.
 Desktop compatibility and timing require the checklist in `docs/workstation-checks.md`.
