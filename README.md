@@ -58,7 +58,8 @@ Paths are resolved against the repository, so launching from another directory
 works. Absolute paths are also accepted.
 
 - `language`: `"fa"` (default Persian) or `"en"` (English), selecting a JSON catalog.
-- `ui_theme`: shared task surface, border, text and outcome colors.
+- `ui_theme`: shared task surfaces, printed card details, text, balloon and outcome colors.
+- `bart_presentation`: viewport-relative balloon dimensions and center position.
 - `controls`: PsychoPy key names for advance, pump, collect, skip, replay, pause and abort;
   instructions display the configured keys.
 - `which_video`: 1 negative, 2 positive, 3 neutral.
@@ -96,9 +97,8 @@ run(catalog=load_catalog("en"))
 
 `run()` passes this same catalog to IGT, BART and both surveys. Participant-facing
 strings live in `locales/en.json` and `locales/fa.json`; fonts, script direction,
-numeral rendering and rating button colors are also catalog data. English uses
-Latin 1–9 text buttons; Persian keeps the original numeral images. IGT label/value
-header positions follow the catalog's reading direction. Media are shared; choosing English
+numeral rendering, optional display font and rating button colors are also catalog data. English uses
+Latin 1–9 text buttons; Persian keeps the original numeral images. IGT header positions follow the catalog's reading direction. Media are shared; choosing English
 does not translate subtitles or speech embedded in video assets.
 
 Edit a catalog to change wording, or load one from a separate directory with
@@ -171,7 +171,7 @@ interactive desktop experiment.
 ## Architecture and limitations
 
 - `main.py`: participant dialog, presentation, input and session orchestration.
-- `ui.py`: native task screens, card reveal, shared instruction layout and injected theme.
+- `ui.py`: native task screens, printed card stacks, vector balloon stage, instruction layout and injected theme.
 - `igt.py`, `bart.py`: task randomization, independently testable without PsychoPy.
 - `session.py`: counterbalancing, setting/asset validation, journaling and export.
 - `config.py`: study parameters, language, controls and media paths.

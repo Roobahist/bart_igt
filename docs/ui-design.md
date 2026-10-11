@@ -1,43 +1,65 @@
 # Task presentation decisions
 
-The original IGT front image (`images/IGT/front1.png`) contains a solid black
-face. It did not convey an outcome; gains and losses appeared in detached,
-brightly colored bars above the decks. The new renderer replaces those assets
-with native PsychoPy rectangles and text.
+## Direction: a quiet tabletop
 
-- All four unselected decks have the same pale surface, size and styling. The
-  number and deck label identify a choice; appearance does not rank the decks.
-- On release, the chosen card gets a white face and a blue outline. Gain and loss
-  appear on that card, with explicit labels, signs and two decimal places.
-  Both are shown, including a zero loss, so an empty space cannot be mistaken
-  for missing feedback. Color reinforces the labels rather than replacing them.
-- The header holds the task name and balance. A separate footer shows the current
-  choice and configured total. No net-result badge, deck history, recommendation
-  or burst probability is added.
-- Task instructions keep their existing content, with a heading and constrained
-  reading width. BART's existing value, trial and bank text move to the header;
-  the balloon's position, size and growth mapping remain unchanged.
-- SAM figures, rating order and selection rules stay unchanged. These are study
-  stimuli, rather than decoration to redraw casually.
+The native task interface uses warm paper, blue-grey printed card backs, serif
+headings and a clay-colored vector balloon. This brings physical task objects
+into focus. It avoids dashboard tiles, oversized choice numerals, casino effects,
+risk gauges and decoration that recommends a strategy. The written instruction
+layouts retain their previous hierarchy and content.
 
-`ui.py` accepts a locale catalog and theme from the caller. Participant-facing
-copy is in `locales/en.json` and `locales/fa.json`; colors are in `config.ui_theme`.
-No new fonts, animation framework or runtime dependencies are required. The
-original IGT images remain in the repository as historical assets, but are no
-longer configured or required by the task.
+The UI/UX Pro Max skill's tactile/skeuomorphic guidance informed the material
+metaphor and depth. Its generic marketing page and dark casino palette were not
+applied to this research application. All shapes are native PsychoPy geometry;
+no generated illustration, extra renderer or image dependency is required.
+
+## Iowa Gambling Task
+
+- Each deck has the same printed diamond pattern, border and layered paper edges.
+  A label below identifies its original deck number. No deck is visually ranked.
+- A press brightens the inner printed border without moving its hit region.
+  Release reveals a warm light card, with corner numerals and separated gain/loss
+  lines. Labels and signed amounts carry meaning independently of color.
+- The header groups the task name and prompt on one side and the balance on the
+  other. The footer reports choice progress. Balance updates after the configured
+  feedback hold, as before. No net badge or deck history is introduced.
+- The original solid-black front image and ornate back assets remain historical
+  media in the repository; the running task no longer requires them.
+
+## Balloon task
+
+- A purpose-drawn balloon, curved reflection, knot, string and ground shadow replace
+  the glossy red raster image and separate rope image. The object sits on the left
+  of an open stage; the current reward and collected bank form a ledger on the right.
+  This composition mirrors for Persian. The title/progress and keyboard legends
+  occupy separate rows, outside the balloon's growth region.
+- The balloon grows continuously with successful pumps between configurable
+  viewport-relative minimum and maximum sizes. Both the start and near-maximum
+  states are captured, in addition to the twenty-pump demonstration.
+- The keyboard legends describe the existing pump/collect keys. They are not
+  clickable buttons. No pressure gauge, burst prediction, countdown or pump
+  recommendation is added. Audio and action rules retain their existing settings.
+
+SAM figures, rating order and response rules remain unchanged. Instructions retain
+all their original catalog content. Body fonts and optional `display_font` come
+from the injected locale; `config.ui_theme` supplies colors and
+`config.bart_presentation` supplies balloon dimensions. Shapes and layout scale
+with the viewport. No fonts or experiment dependencies were installed locally.
 
 ## Scientific scope and verification
 
-The loss distributions, gains, choice mapping, balance calculation, response
-logging, mouse press/release behavior and configured feedback duration are
-unchanged. Balance still updates after the feedback hold. Layout and the explicit
-zero-loss display are presentation changes and may affect attention or behavior:
-review them against the study protocol before collecting or comparing data.
-Do not assume equivalence with sessions collected using the previous layout.
+The loss distributions, gains, deck mapping, counterbalancing, balances, response
+logging, mouse press/release rules, burst hazard and configured feedback duration
+are unchanged. Balloon artwork, initial size, location and visual growth range
+have changed substantially. Card styling and explicit zero-loss feedback also
+change presentation. Review these against the study protocol before collecting
+or comparing data; do not assume equivalence with earlier sessions.
 
-Headless outcome tests cover all decks, an outside click, zero loss and a negative
-net result. Real English OpenGL screenshots are generated remotely through the
-hosted capture workflow. That demonstration cannot validate physical timing,
-mouse accuracy, Persian font shaping or audio/video on a participant workstation.
-Check both languages, click targets and feedback at the intended resolution using
-[the workstation checklist](workstation-checks.md) before data collection.
+Headless regression tests cover task outcomes and geometric separation at several
+desktop sizes. Real English OpenGL captures come from the hosted workflow using
+scripted input. A seed of 219 permits a separate real-rule BART demonstration to
+reach 127 successful pumps; bursts are not disabled or overridden. These are
+synthetic demonstrations, not human sessions. They cannot validate physical
+input/timing, font shaping or audio/video on the intended workstation. Follow
+[the workstation checklist](workstation-checks.md) in both languages before data
+collection.

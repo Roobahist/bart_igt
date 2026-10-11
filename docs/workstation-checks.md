@@ -15,7 +15,10 @@ These checks require the actual participant workstation and are not automated CI
    and signed amounts fit inside the selected card in both languages (including a
    zero loss and the largest configured loss), then verify bank totals, trial counts
    and recorded choices/gains/losses. Test the task skip key.
-6. Hold Space in BART with the default setting: one pump per press. Release and
+6. Review the new vector balloon's initial size, location and visual growth range
+   against the study protocol. Verify it stays clear of the ledger, header and key
+   legends from zero through the largest surviving pump count.
+   Hold Space in BART with the default setting: one pump per press. Release and
    press again; test banking on Enter release and zero gain after a burst. Skip a
    partly inflated balloon: uncollected reward must not appear in the bank.
 7. Test Escape during surveys, each task and video. Confirm window/video cleanup,

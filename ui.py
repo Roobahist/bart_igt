@@ -405,6 +405,7 @@ class BartScreen(TaskScreen):
             )
             for t in [i / 30 for i in range(31)]
         ]
+        self.shadow.pos = (self.x, end - self.h * 0.015)
         self.shadow.draw()
         self.string.draw()
         self.balloon.draw()
