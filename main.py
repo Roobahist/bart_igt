@@ -8,6 +8,7 @@ from igt import gain_loss, reset_decks
 from bart import burst_or_not
 from session import SessionResults, task_order, prepare_config
 from localization import load_catalog
+from ui import IgtScreen, TaskScreen
 
 PARTICIPANT_FIELDS = ("subjectName", "subjectCode", "gender", "age", "handedness")
 PARTICIPANT_CHOICES = {"gender": ("Male", "Female", "Other"), "handedness": ("Right", "Left")}
@@ -37,378 +38,66 @@ def wait_for_advance():
 
 def igt_experiment(catalog):
     global total_liquidity
-
-    if not cfg.igt_skip:
-        igt_Liquidity = cfg.igt_initial_liquidity
-
-        # Instruction
-
-        text = visual.TextStim(
-            win=win,
-            text=catalog.text(
-                "igt_instructions",
-                trials=cfg.igt_total_number_of_trials,
-                advance_key=cfg.controls["advance"].upper(),
-            ),
-            color=cfg.igt_font_color,
-            **catalog.text_options,
-            height=font_size,
-            bold=True,
-            wrapWidth=w,
+    if cfg.igt_skip:
+        return
+    balance = cfg.igt_initial_liquidity
+    screen = IgtScreen(visual, win, catalog, cfg.ui_theme)
+    screen.instructions(
+        "igt",
+        catalog.text(
+            "igt_instructions",
+            trials=cfg.igt_total_number_of_trials,
+            advance_key=cfg.controls["advance"].upper(),
+        ),
+    )
+    win.flip()
+    wait_for_advance()
+    trial = 1
+    mouse_down = False
+    selected = None
+    last_time = time.perf_counter()
+    while trial <= cfg.igt_total_number_of_trials:
+        check_abort()
+        if keys.getState(cfg.controls["skip"]):
+            break
+        pressed = myMouse.getPressed(getTime=False)[0]
+        if not mouse_down and pressed:
+            mouse_down = True
+            for deck, target in enumerate(screen.cards, 1):
+                if myMouse.isPressedIn(target):
+                    selected = deck
+                    gain, loss = gain_loss(deck)
+                    break
+        released = mouse_down and not pressed
+        if released:
+            mouse_down = False
+        feedback = released and selected is not None
+        if feedback:
+            results.append(
+                {
+                    "section": "IGT",
+                    "trial": trial,
+                    "choice": selected,
+                    "gain": gain,
+                    "loss": loss,
+                    "RT": time.perf_counter() - last_time,
+                }
+            )
+        screen.draw(
+            trial,
+            cfg.igt_total_number_of_trials,
+            balance,
+            selected=selected if feedback else None,
+            outcome=(gain, loss) if feedback else None,
         )
-        text.draw()
         win.flip()
-        wait_for_advance()
-
-        # Experiment
-
-        trial_number = 1
-
-        card_width = 2 * w / 13
-        card_height = 1.5 * card_width
-        cards_distance = w / 13
-
-        card1_img_pos = [
-            -(1.5 * card_width + 1.5 * cards_distance),
-            -(h / 2 - (card_height / 2) - distance_from_horizontal_edges),
-        ]
-        card2_img_pos = [
-            -(0.5 * card_width + 0.5 * cards_distance),
-            -(h / 2 - (card_height / 2) - distance_from_horizontal_edges),
-        ]
-        card3_img_pos = [
-            +(0.5 * card_width + 0.5 * cards_distance),
-            -(h / 2 - (card_height / 2) - distance_from_horizontal_edges),
-        ]
-        card4_img_pos = [
-            +(1.5 * card_width + 1.5 * cards_distance),
-            -(h / 2 - (card_height / 2) - distance_from_horizontal_edges),
-        ]
-
-        card1_img = visual.ImageStim(
-            win, image=cfg.igt_card_back_path, size=[card_width, card_height], pos=card1_img_pos
-        )
-        card2_img = visual.ImageStim(
-            win, image=cfg.igt_card_back_path, size=[card_width, card_height], pos=card2_img_pos
-        )
-        card3_img = visual.ImageStim(
-            win, image=cfg.igt_card_back_path, size=[card_width, card_height], pos=card3_img_pos
-        )
-        card4_img = visual.ImageStim(
-            win, image=cfg.igt_card_back_path, size=[card_width, card_height], pos=card4_img_pos
-        )
-
-        card1_back_img_pos = [
-            -(1.5 * card_width + 1.5 * cards_distance),
-            -(h / 2 - (card_height / 2) - distance_from_horizontal_edges),
-        ]
-        card2_back_img_pos = [
-            -(0.5 * card_width + 0.5 * cards_distance),
-            -(h / 2 - (card_height / 2) - distance_from_horizontal_edges),
-        ]
-        card3_back_img_pos = [
-            +(0.5 * card_width + 0.5 * cards_distance),
-            -(h / 2 - (card_height / 2) - distance_from_horizontal_edges),
-        ]
-        card4_back_img_pos = [
-            +(1.5 * card_width + 1.5 * cards_distance),
-            -(h / 2 - (card_height / 2) - distance_from_horizontal_edges),
-        ]
-
-        card1_back_img = visual.ImageStim(
-            win,
-            image=cfg.igt_card_front_path,
-            size=[card_width, card_height],
-            pos=card1_back_img_pos,
-        )
-        card2_back_img = visual.ImageStim(
-            win,
-            image=cfg.igt_card_front_path,
-            size=[card_width, card_height],
-            pos=card2_back_img_pos,
-        )
-        card3_back_img = visual.ImageStim(
-            win,
-            image=cfg.igt_card_front_path,
-            size=[card_width, card_height],
-            pos=card3_back_img_pos,
-        )
-        card4_back_img = visual.ImageStim(
-            win,
-            image=cfg.igt_card_front_path,
-            size=[card_width, card_height],
-            pos=card4_back_img_pos,
-        )
-
-        card1_text_pos = [
-            -(1.5 * card_width + 1.5 * cards_distance),
-            -(h / 2 - (distance_from_horizontal_edges / 2)),
-        ]
-        card2_text_pos = [
-            -(0.5 * card_width + 0.5 * cards_distance),
-            -(h / 2 - (distance_from_horizontal_edges / 2)),
-        ]
-        card3_text_pos = [
-            +(0.5 * card_width + 0.5 * cards_distance),
-            -(h / 2 - (distance_from_horizontal_edges / 2)),
-        ]
-        card4_text_pos = [
-            +(1.5 * card_width + 1.5 * cards_distance),
-            -(h / 2 - (distance_from_horizontal_edges / 2)),
-        ]
-
-        card1_text = visual.TextStim(
-            win=win,
-            text=catalog.text("deck", number=1),
-            color=cfg.igt_font_color,
-            **catalog.text_options,
-            height=font_size,
-            bold=True,
-            wrapWidth=w,
-            pos=card1_text_pos,
-        )
-        card2_text = visual.TextStim(
-            win=win,
-            text=catalog.text("deck", number=2),
-            color=cfg.igt_font_color,
-            **catalog.text_options,
-            height=font_size,
-            bold=True,
-            wrapWidth=w,
-            pos=card2_text_pos,
-        )
-        card3_text = visual.TextStim(
-            win=win,
-            text=catalog.text("deck", number=3),
-            color=cfg.igt_font_color,
-            **catalog.text_options,
-            height=font_size,
-            bold=True,
-            wrapWidth=w,
-            pos=card3_text_pos,
-        )
-        card4_text = visual.TextStim(
-            win=win,
-            text=catalog.text("deck", number=4),
-            color=cfg.igt_font_color,
-            **catalog.text_options,
-            height=font_size,
-            bold=True,
-            wrapWidth=w,
-            pos=card4_text_pos,
-        )
-
-        trial_text_pos = [
-            -((1 if catalog.is_rtl else 2) * card_width + 1.5 * cards_distance),
-            h / 2 - (distance_from_horizontal_edges / 2),
-        ]
-        trial_text = visual.TextStim(
-            win=win,
-            text=catalog.text("igt_trial"),
-            color=cfg.igt_font_color,
-            **catalog.text_options,
-            height=font_size,
-            bold=True,
-            wrapWidth=w,
-            pos=trial_text_pos,
-            anchorHoriz="right" if catalog.is_rtl else "left",
-            alignText="right" if catalog.is_rtl else "left",
-        )
-
-        trial_number_text_pos = [
-            -((2 if catalog.is_rtl else 1) * card_width + 1.5 * cards_distance),
-            h / 2 - (distance_from_horizontal_edges / 2),
-        ]
-        trial_number_text = visual.TextStim(
-            win=win,
-            text=str(trial_number).zfill(3),
-            color=cfg.igt_font_color,
-            **catalog.text_options,
-            height=font_size,
-            bold=True,
-            wrapWidth=w,
-            pos=trial_number_text_pos,
-            anchorHoriz="left" if catalog.is_rtl else "right",
-            alignText="left" if catalog.is_rtl else "right",
-        )
-
-        score_text_pos = [
-            +((2 if catalog.is_rtl else 1.5) * card_width + 1.5 * cards_distance),
-            h / 2 - (distance_from_horizontal_edges / 2),
-        ]
-        score_text = visual.TextStim(
-            win=win,
-            text=catalog.text("igt_balance"),
-            color=cfg.igt_font_color,
-            **catalog.text_options,
-            height=font_size,
-            bold=True,
-            wrapWidth=w,
-            pos=score_text_pos,
-            anchorHoriz="right",
-            alignText="right",
-        )
-
-        score_value_text_pos = [
-            +((1.5 if catalog.is_rtl else 2) * card_width + 1.5 * cards_distance),
-            h / 2 - (distance_from_horizontal_edges / 2),
-        ]
-        score_value_text = visual.TextStim(
-            win=win,
-            text=catalog.text("igt_amount", amount=igt_Liquidity),
-            color=cfg.igt_font_color,
-            **catalog.text_options,
-            height=font_size,
-            bold=True,
-            wrapWidth=w,
-            pos=score_value_text_pos,
-            anchorHoriz="right",
-            alignText="right",
-        )
-
-        win_text_pos = [0, h / 4 + distance_from_horizontal_edges / 4]
-        win_text = visual.TextStim(
-            win=win,
-            text="",
-            color=cfg.igt_font_color,
-            **catalog.text_options,
-            height=font_size,
-            bold=True,
-            wrapWidth=w,
-            pos=win_text_pos,
-        )
-
-        lose_text_pos = [0, h / 4 - distance_from_horizontal_edges / 4]
-        lose_text = visual.TextStim(
-            win=win,
-            text="",
-            color=cfg.igt_font_color,
-            **catalog.text_options,
-            height=font_size,
-            bold=True,
-            wrapWidth=w,
-            pos=lose_text_pos,
-        )
-
-        win_rect_pos = [0, h / 4 + distance_from_horizontal_edges / 4]
-        win_rect = visual.Rect(
-            win=win,
-            units="pix",
-            width=w / 3,
-            height=0.9 * (distance_from_horizontal_edges / 2),
-            fillColor=[0, 1, 0],
-            lineColor=[1, 1, 1],
-            pos=win_rect_pos,
-        )
-
-        lose_rect_pos = [0, h / 4 - distance_from_horizontal_edges / 4]
-        lose_rect = visual.Rect(
-            win=win,
-            units="pix",
-            width=w / 3,
-            height=0.9 * (distance_from_horizontal_edges / 2),
-            fillColor=[1, 0, 0],
-            lineColor=[1, 1, 1],
-            pos=lose_rect_pos,
-        )
-
-        def draw_main():
-            card1_img.draw()
-            card2_img.draw()
-            card3_img.draw()
-            card4_img.draw()
-
-            card1_text.draw()
-            card2_text.draw()
-            card3_text.draw()
-            card4_text.draw()
-
-            trial_text.draw()
-            score_text.draw()
-            trial_number_text.draw()
-            score_value_text.draw()
-
-        mouse_status = "UP"
-        break_break = 0
-        click_on_card = 0
-        sleep = 0
-        last_time = time.perf_counter()
-
-        while (trial_number <= cfg.igt_total_number_of_trials) and (not break_break):
-            check_abort()
-            if keys.getState(cfg.controls["skip"]):
-                break_break = 1
-
-            draw_main()
-
-            buttons = myMouse.getPressed(getTime=False)
-
-            if mouse_status == "UP" and buttons[0] == 1:
-                mouse_status = "DOWN"
-                if myMouse.isPressedIn(card1_img):
-                    click_on_card = 1
-                    gain, loss = gain_loss(1)
-
-                elif myMouse.isPressedIn(card2_img):
-                    click_on_card = 2
-                    gain, loss = gain_loss(2)
-
-                elif myMouse.isPressedIn(card3_img):
-                    click_on_card = 3
-                    gain, loss = gain_loss(3)
-
-                elif myMouse.isPressedIn(card4_img):
-                    click_on_card = 4
-                    gain, loss = gain_loss(4)
-
-            if mouse_status == "DOWN" and buttons[0] == 0:
-                mouse_status = "UP"
-
-                if click_on_card > 0:
-                    trial_info = {
-                        "section": "IGT",
-                        "trial": trial_number,
-                        "choice": click_on_card,
-                        "gain": gain,
-                        "loss": loss,
-                        "RT": time.perf_counter() - last_time,
-                    }
-                    results.append(trial_info)
-
-                    sleep = 1
-                    if gain > 0:
-                        win_text.text = catalog.text("igt_gain", amount=gain)
-                        win_rect.draw()
-                        win_text.draw()
-
-                    if loss > 0:
-                        lose_text.text = catalog.text("igt_loss", amount=loss)
-                        lose_rect.draw()
-                        lose_text.draw()
-
-                    if click_on_card == 1:
-                        card1_back_img.draw()
-                    elif click_on_card == 2:
-                        card2_back_img.draw()
-                    elif click_on_card == 3:
-                        card3_back_img.draw()
-                    elif click_on_card == 4:
-                        card4_back_img.draw()
-
-                    click_on_card = 0
-
-            win.flip()
-
-            if sleep:
-                sleep = 0
-                core.wait(cfg.igt_sleep_time)
-                igt_Liquidity = igt_Liquidity + gain - loss
-                score_value_text.text = catalog.text("igt_amount", amount=igt_Liquidity)
-                trial_number += 1
-                trial_number_text.text = str(trial_number).zfill(3)
-                last_time = time.perf_counter()
-
-        total_liquidity += igt_Liquidity - cfg.igt_initial_liquidity
+        if feedback:
+            core.wait(cfg.igt_sleep_time)
+            balance += gain - loss
+            trial += 1
+            selected = None
+            last_time = time.perf_counter()
+    total_liquidity += balance - cfg.igt_initial_liquidity
 
 
 def bart_experiment(catalog):
@@ -417,22 +106,16 @@ def bart_experiment(catalog):
     if not cfg.bart_skip:
         # Instructions
 
-        instruction_text = visual.TextStim(
-            win=win,
-            text=catalog.text(
+        screen = TaskScreen(visual, win, catalog, cfg.ui_theme)
+        screen.instructions(
+            "bart",
+            catalog.text(
                 "bart_instructions",
                 pump_key=cfg.controls["pump"].upper(),
                 collect_key=cfg.controls["collect"].upper(),
                 advance_key=cfg.controls["advance"].upper(),
             ),
-            color=cfg.bart_font_color,
-            **catalog.text_options,
-            height=font_size,
-            bold=True,
-            wrapWidth=w,
         )
-
-        instruction_text.draw()
         win.flip()
         wait_for_advance()
 
@@ -485,7 +168,7 @@ def bart_experiment(catalog):
         current_bank_text = visual.TextStim(
             win=win,
             text=catalog.text("balloon_value", amount=0),
-            pos=[0, 0],
+            pos=[0, h * 0.33],
             color=cfg.bart_font_color,
             **catalog.text_options,
             height=font_size,
@@ -498,7 +181,7 @@ def bart_experiment(catalog):
             text=catalog.text("balloon_trial", number=1),
             pos=[
                 -(w / 2 - (distance_from_vertical_edges)),
-                (-h / 2) + distance_from_vertical_edges,
+                h * 0.42,
             ],
             anchorHoriz="left",
             alignText="left",
@@ -512,7 +195,7 @@ def bart_experiment(catalog):
         main_bank_text = visual.TextStim(
             win=win,
             text=catalog.text("bank_balance", amount=0),
-            pos=[(w / 2) - distance_from_vertical_edges, (-h / 2) + distance_from_vertical_edges],
+            pos=[(w / 2) - distance_from_vertical_edges, h * 0.42],
             anchorHoriz="right",
             alignText="right",
             color=cfg.bart_font_color,

@@ -52,6 +52,18 @@ elif which_video == 3:
 else:
     raise ValueError("which_video must be 1, 2, or 3")
 
+# Shared native task presentation. Hex colors are converted to PsychoPy RGB by ui.py.
+ui_theme = {
+    "surface": "#FFFFFF",
+    "deck": "#F1F5FA",
+    "border": "#A3AFBF",
+    "ink": "#18283C",
+    "muted": "#536174",
+    "accent": "#315C85",
+    "gain": "#176448",
+    "loss": "#A23B28",
+}
+
 # IGT
 igt_skip = 0  # set to 1 if you dont want IGT experiment to show up
 igt_deck1_all_losses = [0, 0, 0, 0, 0, 1.5, 2, 2.5, 3, 3.5]
@@ -67,8 +79,6 @@ igt_total_number_of_trials = 5
 igt_bg_color = [1, 1, 1]  # RGB value in normalized form for White color
 igt_font_color = [-1, -1, -1]  # RGB value in normalized form for Black color
 igt_sleep_time = 2  # gain and loss will appear on screen for this long
-igt_card_back_path = "images/IGT/back1.png"
-igt_card_front_path = "images/IGT/front1.png"
 
 # BART
 bart_skip = 0  # set to 1 if you dont want BART experiment to show up

@@ -4,6 +4,10 @@ on:
   push:
     branches: [docs/english-screenshots]
     paths:
+      - main.py
+      - ui.py
+      - config.py
+      - locales/**
       - scripts/capture_screenshots.py
       - .github/workflows/screenshots.yml
 permissions:
