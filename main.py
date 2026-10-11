@@ -1,4 +1,4 @@
-"""Persian SAM, IGT and BART desktop experiment. Run with PsychoPy Coder."""
+"""Bilingual SAM, IGT and BART desktop experiment. Run with PsychoPy Coder."""
 
 import time
 import logging
@@ -7,6 +7,10 @@ import config as cfg
 from igt import gain_loss, reset_decks
 from bart import burst_or_not
 from session import SessionResults, task_order, prepare_config
+from localization import load_catalog
+
+PARTICIPANT_FIELDS = ("subjectName", "subjectCode", "gender", "age", "handedness")
+PARTICIPANT_CHOICES = {"gender": ("Male", "Female", "Other"), "handedness": ("Right", "Left")}
 
 
 class ExperimentAborted(Exception):
@@ -14,24 +18,24 @@ class ExperimentAborted(Exception):
 
 
 def check_abort():
-    if keys.getState("escape"):
+    if keys.getState(cfg.controls["abort"]):
         raise ExperimentAborted()
 
 
-def wait_for_space():
+def wait_for_advance():
     """Wait for a fresh press, so held instruction keys do not pump balloons."""
-    while keys.getState("space"):
+    while keys.getState(cfg.controls["advance"]):
         check_abort()
         core.wait(0.001)
-    while not keys.getState("space"):
+    while not keys.getState(cfg.controls["advance"]):
         check_abort()
         core.wait(0.001)
-    while keys.getState("space"):
+    while keys.getState(cfg.controls["advance"]):
         check_abort()
         core.wait(0.001)
 
 
-def igt_experiment():
+def igt_experiment(catalog):
     global total_liquidity
 
     if not cfg.igt_skip:
@@ -41,26 +45,20 @@ def igt_experiment():
 
         text = visual.TextStim(
             win=win,
-            text="""شرکت کننده گرامی، آزمون حاضر به عنوان ابزاری برای ارزیابی چهارچوب تصمیم گیری شما استفاده می شود.
-        شما در این آزمون با 4 کارت روبه رو می شوید که انتخاب هر یک از این کارت ها مقادیری از برد و باخت به همراه دارد.
-        در ابتدا شما از یک موجودی برخوردارید که با استفاده از آن موجودی می توانید به بازی بپردازید.
-        شما باید تلاش کنید که با انتخاب های خود به حداکثر سود دست یابید.
-        توجه داشته باشید که شما در هر مرحله می توانید یک انتخاب داشته باشید. تعداد انتخاب‌ها در تنظیمات آزمون مشخص شده است.
-        پس از هر انتخاب شما می توانید از میزان برد و باخت خود مطلع شوید.
-
-        توجه: لطفا با دقت پاسخ دهید. درصدی از مبلغ کلی که برنده می شوید، در آخر آزمون به شما نقدا پرداخت خواهد شد.
-
-        برای شروع آزمون، هر موقع آماده بودید کلید SPACE را فشار دهید.""",
+            text=catalog.text(
+                "igt_instructions",
+                trials=cfg.igt_total_number_of_trials,
+                advance_key=cfg.controls["advance"].upper(),
+            ),
             color=cfg.igt_font_color,
-            languageStyle="Arabic",
-            font="IRANSans",
+            **catalog.text_options,
             height=font_size,
             bold=True,
             wrapWidth=w,
         )
         text.draw()
         win.flip()
-        wait_for_space()
+        wait_for_advance()
 
         # Experiment
 
@@ -161,10 +159,9 @@ def igt_experiment():
 
         card1_text = visual.TextStim(
             win=win,
-            text="گروه 1",
+            text=catalog.text("deck", number=1),
             color=cfg.igt_font_color,
-            languageStyle="Arabic",
-            font="IRANSans",
+            **catalog.text_options,
             height=font_size,
             bold=True,
             wrapWidth=w,
@@ -172,10 +169,9 @@ def igt_experiment():
         )
         card2_text = visual.TextStim(
             win=win,
-            text="گروه 2",
+            text=catalog.text("deck", number=2),
             color=cfg.igt_font_color,
-            languageStyle="Arabic",
-            font="IRANSans",
+            **catalog.text_options,
             height=font_size,
             bold=True,
             wrapWidth=w,
@@ -183,10 +179,9 @@ def igt_experiment():
         )
         card3_text = visual.TextStim(
             win=win,
-            text="گروه 3",
+            text=catalog.text("deck", number=3),
             color=cfg.igt_font_color,
-            languageStyle="Arabic",
-            font="IRANSans",
+            **catalog.text_options,
             height=font_size,
             bold=True,
             wrapWidth=w,
@@ -194,10 +189,9 @@ def igt_experiment():
         )
         card4_text = visual.TextStim(
             win=win,
-            text="گروه 4",
+            text=catalog.text("deck", number=4),
             color=cfg.igt_font_color,
-            languageStyle="Arabic",
-            font="IRANSans",
+            **catalog.text_options,
             height=font_size,
             bold=True,
             wrapWidth=w,
@@ -205,51 +199,48 @@ def igt_experiment():
         )
 
         trial_text_pos = [
-            -(1 * card_width + 1.5 * cards_distance),
+            -((1 if catalog.is_rtl else 2) * card_width + 1.5 * cards_distance),
             h / 2 - (distance_from_horizontal_edges / 2),
         ]
         trial_text = visual.TextStim(
             win=win,
-            text="شماره انتخاب  :",
+            text=catalog.text("igt_trial"),
             color=cfg.igt_font_color,
-            languageStyle="Arabic",
-            font="IRANSans",
+            **catalog.text_options,
             height=font_size,
             bold=True,
             wrapWidth=w,
             pos=trial_text_pos,
-            anchorHoriz="right",
-            alignText="right",
+            anchorHoriz="right" if catalog.is_rtl else "left",
+            alignText="right" if catalog.is_rtl else "left",
         )
 
         trial_number_text_pos = [
-            -(2 * card_width + 1.5 * cards_distance),
+            -((2 if catalog.is_rtl else 1) * card_width + 1.5 * cards_distance),
             h / 2 - (distance_from_horizontal_edges / 2),
         ]
         trial_number_text = visual.TextStim(
             win=win,
             text=str(trial_number).zfill(3),
             color=cfg.igt_font_color,
-            languageStyle="Arabic",
-            font="IRANSans",
+            **catalog.text_options,
             height=font_size,
             bold=True,
             wrapWidth=w,
             pos=trial_number_text_pos,
-            anchorHoriz="left",
-            alignText="left",
+            anchorHoriz="left" if catalog.is_rtl else "right",
+            alignText="left" if catalog.is_rtl else "right",
         )
 
         score_text_pos = [
-            +(2 * card_width + 1.5 * cards_distance),
+            +((2 if catalog.is_rtl else 1.5) * card_width + 1.5 * cards_distance),
             h / 2 - (distance_from_horizontal_edges / 2),
         ]
         score_text = visual.TextStim(
             win=win,
-            text="موجودی  :",
+            text=catalog.text("igt_balance"),
             color=cfg.igt_font_color,
-            languageStyle="Arabic",
-            font="IRANSans",
+            **catalog.text_options,
             height=font_size,
             bold=True,
             wrapWidth=w,
@@ -259,15 +250,14 @@ def igt_experiment():
         )
 
         score_value_text_pos = [
-            +(1.5 * card_width + 1.5 * cards_distance),
+            +((1.5 if catalog.is_rtl else 2) * card_width + 1.5 * cards_distance),
             h / 2 - (distance_from_horizontal_edges / 2),
         ]
         score_value_text = visual.TextStim(
             win=win,
-            text="{:.2f}".format(igt_Liquidity) + "$  ",
+            text=catalog.text("igt_amount", amount=igt_Liquidity),
             color=cfg.igt_font_color,
-            languageStyle="Arabic",
-            font="IRANSans",
+            **catalog.text_options,
             height=font_size,
             bold=True,
             wrapWidth=w,
@@ -281,8 +271,7 @@ def igt_experiment():
             win=win,
             text="",
             color=cfg.igt_font_color,
-            languageStyle="Arabic",
-            font="IRANSans",
+            **catalog.text_options,
             height=font_size,
             bold=True,
             wrapWidth=w,
@@ -294,8 +283,7 @@ def igt_experiment():
             win=win,
             text="",
             color=cfg.igt_font_color,
-            languageStyle="Arabic",
-            font="IRANSans",
+            **catalog.text_options,
             height=font_size,
             bold=True,
             wrapWidth=w,
@@ -348,7 +336,7 @@ def igt_experiment():
 
         while (trial_number <= cfg.igt_total_number_of_trials) and (not break_break):
             check_abort()
-            if keys.getState("i"):
+            if keys.getState(cfg.controls["skip"]):
                 break_break = 1
 
             draw_main()
@@ -389,12 +377,12 @@ def igt_experiment():
 
                     sleep = 1
                     if gain > 0:
-                        win_text.text = f"شما برنده {gain} دلار شدید."
+                        win_text.text = catalog.text("igt_gain", amount=gain)
                         win_rect.draw()
                         win_text.draw()
 
                     if loss > 0:
-                        lose_text.text = f"اما شما همچنین {loss} دلار از دست دادید."
+                        lose_text.text = catalog.text("igt_loss", amount=loss)
                         lose_rect.draw()
                         lose_text.draw()
 
@@ -415,7 +403,7 @@ def igt_experiment():
                 sleep = 0
                 core.wait(cfg.igt_sleep_time)
                 igt_Liquidity = igt_Liquidity + gain - loss
-                score_value_text.text = "{:.2f}".format(igt_Liquidity) + "$  "
+                score_value_text.text = catalog.text("igt_amount", amount=igt_Liquidity)
                 trial_number += 1
                 trial_number_text.text = str(trial_number).zfill(3)
                 last_time = time.perf_counter()
@@ -423,7 +411,7 @@ def igt_experiment():
         total_liquidity += igt_Liquidity - cfg.igt_initial_liquidity
 
 
-def bart_experiment():
+def bart_experiment(catalog):
     global total_liquidity
 
     if not cfg.bart_skip:
@@ -431,25 +419,14 @@ def bart_experiment():
 
         instruction_text = visual.TextStim(
             win=win,
-            text="""این آزمون برای ارزیابی تصمیم گیری شما است.
-        این یک بازی است که در آن شما باید درآمد خود را در یک رقابت بادکردن بادکنکی بهینه کنید.
-        شما برای هر بار باد کردن بادکنک منطبق با سایز آن مقداری پول جایزه می گیرید ،
-         اما در صورتی که آنرا بیش از حد باد کنید، منفجر می شود و برای آن بادکنک پولی دریافت نخواهید کرد.
-         بادکنک ها در حداکثر اندازه خود متفاوت هستند .
-        گاهی اوقات می توانند تقریباً به اندازه صفحه نمایش برسند اما بیشتر آنها قبل از آن منفجر می شوند.
-         برای بادکردن بادکنک ها باید دکمه SPACE را فشار دهید.
-        شما دو بانک فعلی و اصلی دارید.
-         بانک فعلی مقدار پول مرتبط با بادکنک حال حاضر است و بانک اصلی مجموع پول جمع شده در کل آزمون است.
-         شما می توانید با  فشار دادن دکمه ENTER قبل از ترکیدن بادکنک،
-        پول جمع آوری شده در بادکنک فعلی را به بانک اصلی انتقال دهید
-         و به مرحله بعد بروید.
-
-        توجه: لطفا با دقت پاسخ دهید. درصدی از مبلغی که در بانک اصلی جمع کرده اید، در آخر آزمون به شما نقدا پرداخت خواهد شد.
-
-        برای شروع آزمون، هر موقع آماده بودید کلید SPACE را فشار دهید.""",
+            text=catalog.text(
+                "bart_instructions",
+                pump_key=cfg.controls["pump"].upper(),
+                collect_key=cfg.controls["collect"].upper(),
+                advance_key=cfg.controls["advance"].upper(),
+            ),
             color=cfg.bart_font_color,
-            languageStyle="Arabic",
-            font="IRANSans",
+            **catalog.text_options,
             height=font_size,
             bold=True,
             wrapWidth=w,
@@ -457,7 +434,7 @@ def bart_experiment():
 
         instruction_text.draw()
         win.flip()
-        wait_for_space()
+        wait_for_advance()
 
         sounds = {
             name: sound.Sound(path)
@@ -507,11 +484,10 @@ def bart_experiment():
 
         current_bank_text = visual.TextStim(
             win=win,
-            text="ارزش این بادکنک  :  $0.00",
+            text=catalog.text("balloon_value", amount=0),
             pos=[0, 0],
             color=cfg.bart_font_color,
-            languageStyle="Arabic",
-            font="IRANSans",
+            **catalog.text_options,
             height=font_size,
             bold=True,
             wrapWidth=w,
@@ -519,7 +495,7 @@ def bart_experiment():
 
         trial_number_text = visual.TextStim(
             win=win,
-            text="شماره بادکنک  :  01",
+            text=catalog.text("balloon_trial", number=1),
             pos=[
                 -(w / 2 - (distance_from_vertical_edges)),
                 (-h / 2) + distance_from_vertical_edges,
@@ -527,8 +503,7 @@ def bart_experiment():
             anchorHoriz="left",
             alignText="left",
             color=cfg.bart_font_color,
-            languageStyle="Arabic",
-            font="IRANSans",
+            **catalog.text_options,
             height=font_size,
             bold=True,
             wrapWidth=w,
@@ -536,13 +511,12 @@ def bart_experiment():
 
         main_bank_text = visual.TextStim(
             win=win,
-            text="موجودی بانک اصلی  :  $0.00",
+            text=catalog.text("bank_balance", amount=0),
             pos=[(w / 2) - distance_from_vertical_edges, (-h / 2) + distance_from_vertical_edges],
             anchorHoriz="right",
             alignText="right",
             color=cfg.bart_font_color,
-            languageStyle="Arabic",
-            font="IRANSans",
+            **catalog.text_options,
             height=font_size,
             bold=True,
             wrapWidth=w,
@@ -563,8 +537,8 @@ def bart_experiment():
 
             balloon_img.size = min_balloon_size
             balloon_img.pos = balloon_img_pos
-            current_bank_text.text = "ارزش این بادکنک  :  $0.00"
-            trial_number_text.text = f"شماره بادکنک  :  {str(trial_number).zfill(2)}"
+            current_bank_text.text = catalog.text("balloon_value", amount=0)
+            trial_number_text.text = catalog.text("balloon_trial", number=trial_number)
 
             rope_img.draw()
             balloon_img.draw()
@@ -579,7 +553,7 @@ def bart_experiment():
                 check_abort()
                 core.wait(0.001)
 
-                if keys.getState("space"):
+                if keys.getState(cfg.controls["pump"]):
                     space_status = "DOWN"
 
                     space_counter += 1
@@ -592,8 +566,8 @@ def bart_experiment():
                             balloon_img.pos = balloon_pos
 
                             current_liquidity = blow_num * cfg.bart_blow_addition
-                            current_bank_text.text = (
-                                f"ارزش این بادکنک  :  ${'{:.2f}'.format(current_liquidity)}"
+                            current_bank_text.text = catalog.text(
+                                "balloon_value", amount=current_liquidity
                             )
 
                             if cfg.bart_blow_sound:
@@ -622,11 +596,11 @@ def bart_experiment():
                             }
                             results.append(trial_info)
 
-                elif keys.getState("return") and return_status == "UP":
+                elif keys.getState(cfg.controls["collect"]) and return_status == "UP":
                     space_status = "UP"
                     return_status = "DOWN"
 
-                elif keys.getState("i"):
+                elif keys.getState(cfg.controls["skip"]):
                     space_status = "UP"
                     break_break = True
 
@@ -639,7 +613,7 @@ def bart_experiment():
                 if (
                     not bursted
                     and not break_break
-                    and not keys.getState("return")
+                    and not keys.getState(cfg.controls["collect"])
                     and return_status == "DOWN"
                 ):
                     return_status = "UP"
@@ -660,23 +634,63 @@ def bart_experiment():
 
             if collected:
                 main_liquidity += current_liquidity
-                main_bank_text.text = f"موجودی بانک اصلی  :  ${'{:.2f}'.format(main_liquidity)}"
+                main_bank_text.text = catalog.text("bank_balance", amount=main_liquidity)
 
             trial_number += 1
 
         total_liquidity += main_liquidity
 
 
-def survey(section):
+def make_rating_row(catalog, y, size, spacing):
+    """Use catalog-selected numeral images or native text buttons, with equal hit areas."""
+    targets, labels = [], []
+    for number in range(1, 10):
+        pos = [(number - 5) * spacing, y]
+        if catalog.rating_image_pattern:
+            setting = catalog.rating_image_pattern.format(number=number, state="unselected")
+            target = visual.ImageStim(win, image=getattr(cfg, setting), size=size, pos=pos)
+        else:
+            target = visual.Rect(
+                win=win,
+                width=size[0],
+                height=size[1],
+                pos=pos,
+                fillColor=catalog.rating_colors["unselected"],
+                lineColor=catalog.rating_colors["unselected"],
+            )
+            labels.append(
+                visual.TextStim(
+                    win=win,
+                    text=str(number),
+                    pos=pos,
+                    height=size[1] * 0.7,
+                    color=cfg.font_color,
+                    bold=True,
+                    **catalog.text_options,
+                )
+            )
+        targets.append(target)
+    return targets, labels
+
+
+def update_rating_selection(catalog, targets, selected):
+    """Highlight the selected value without changing its ordinal or click target."""
+    for number, target in enumerate(targets, 1):
+        state = "selected" if number == selected else "unselected"
+        if catalog.rating_image_pattern:
+            setting = catalog.rating_image_pattern.format(number=number, state=state)
+            target.image = getattr(cfg, setting)
+        else:
+            target.fillColor = catalog.rating_colors[state]
+            target.lineColor = catalog.rating_colors[state]
+
+
+def survey(section, catalog):
     first_survey_text = visual.TextStim(
         win=win,
-        text="""لطفا هیجان فعلی خود را در دو پرسشنامه زیر بیان کنید.
-        شما می توانید در پرسشنامه اول میزان برانگیخته بودن یا آرام بودن در حال حاضر
-        و در پرسشنامه دوم خوشایند بودن یا ناخوشایند بودن وضعیت هیجانی خود را بیان کنید.
-        شما می توانید به وضعیت هیجانی خود از 1 تا 9 نمره بدهید. با کلیک کردن روی شماره مورد نظر نمره شما ثبت خواهد شد.""",
+        text=catalog.text("survey_instructions"),
         color=cfg.font_color,
-        languageStyle="Arabic",
-        font="IRANSans",
+        **catalog.text_options,
         height=font_size,
         bold=True,
         wrapWidth=w,
@@ -686,10 +700,9 @@ def survey(section):
 
     press_space_to_proceed = visual.TextStim(
         win=win,
-        text="برای ادامه کلید SPACE را فشار دهید.",
+        text=catalog.text("continue", advance_key=cfg.controls["advance"].upper()),
         color=cfg.font_color,
-        languageStyle="Arabic",
-        font="IRANSans",
+        **catalog.text_options,
         height=font_size,
         bold=True,
         wrapWidth=w,
@@ -719,10 +732,9 @@ def survey(section):
 
     least_arousal = visual.TextStim(
         win=win,
-        text="آرام",
+        text=catalog.text("arousal_low"),
         color=cfg.font_color,
-        languageStyle="Arabic",
-        font="IRANSans",
+        **catalog.text_options,
         height=font_size,
         bold=True,
         wrapWidth=w,
@@ -732,10 +744,9 @@ def survey(section):
 
     most_arousal = visual.TextStim(
         win=win,
-        text="برانگیخته",
+        text=catalog.text("arousal_high"),
         color=cfg.font_color,
-        languageStyle="Arabic",
-        font="IRANSans",
+        **catalog.text_options,
         height=font_size,
         bold=True,
         wrapWidth=w,
@@ -745,15 +756,9 @@ def survey(section):
     number_size = [w / 30, w / 30]
     arousal_number_height = arousal_height - sam_height / 2 - 0.7 * number_size[1]
 
-    arousal_numbers = [
-        visual.ImageStim(
-            win,
-            image=getattr(cfg, f"number{i}_unselected_path"),
-            size=number_size,
-            pos=[(i - 5) * (sam_width + sam_distance_between) / 2, arousal_number_height],
-        )
-        for i in range(1, 10)
-    ]
+    arousal_numbers, arousal_labels = make_rating_row(
+        catalog, arousal_number_height, number_size, (sam_width + sam_distance_between) / 2
+    )
 
     pleasure_height = -h / 5
 
@@ -771,10 +776,9 @@ def survey(section):
 
     least_pleasure = visual.TextStim(
         win=win,
-        text="خیلی خوشایند",
+        text=catalog.text("pleasure_high"),
         color=cfg.font_color,
-        languageStyle="Arabic",
-        font="IRANSans",
+        **catalog.text_options,
         height=font_size,
         bold=True,
         wrapWidth=w,
@@ -783,10 +787,9 @@ def survey(section):
 
     most_pleasure = visual.TextStim(
         win=win,
-        text="خیلی ناخوشایند",
+        text=catalog.text("pleasure_low"),
         color=cfg.font_color,
-        languageStyle="Arabic",
-        font="IRANSans",
+        **catalog.text_options,
         height=font_size,
         bold=True,
         wrapWidth=w,
@@ -795,15 +798,9 @@ def survey(section):
 
     pleasure_number_height = pleasure_height - sam_height / 2 - 0.7 * number_size[1]
 
-    pleasure_numbers = [
-        visual.ImageStim(
-            win,
-            image=getattr(cfg, f"number{i}_unselected_path"),
-            size=number_size,
-            pos=[(i - 5) * (sam_width + sam_distance_between) / 2, pleasure_number_height],
-        )
-        for i in range(1, 10)
-    ]
+    pleasure_numbers, pleasure_labels = make_rating_row(
+        catalog, pleasure_number_height, number_size, (sam_width + sam_distance_between) / 2
+    )
 
     def draw_survey():
         first_survey_text.draw()
@@ -825,6 +822,8 @@ def survey(section):
             least_pleasure,
             *arousal_numbers,
             *pleasure_numbers,
+            *arousal_labels,
+            *pleasure_labels,
         ):
             stimulus.draw()
 
@@ -852,18 +851,13 @@ def survey(section):
 
         if mouse_status == "DOWN" and buttons[0] == 0:
             mouse_status = "UP"
-            for stimuli, selected in (
-                (arousal_numbers, selected_arousal_condition),
-                (pleasure_numbers, selected_pleasure_condition),
-            ):
-                for i, stimulus in enumerate(stimuli, 1):
-                    state = "selected" if i == selected else "unselected"
-                    stimulus.image = getattr(cfg, f"number{i}_{state}_path")
+            update_rating_selection(catalog, arousal_numbers, selected_arousal_condition)
+            update_rating_selection(catalog, pleasure_numbers, selected_pleasure_condition)
 
-        if keys.getState("space"):
+        if keys.getState(cfg.controls["advance"]):
             space_status = "DOWN"
 
-        if not keys.getState("space") and space_status == "DOWN":
+        if not keys.getState(cfg.controls["advance"]) and space_status == "DOWN":
             space_status = "UP"
             if selected_arousal_condition is not None and selected_pleasure_condition is not None:
                 proceed = True
@@ -878,7 +872,7 @@ def survey(section):
     results.append(survey_info)
 
 
-def run():
+def run(*, catalog=None):
     """Run one participant session and save partial results on every exit."""
     global visual, event, core, sound, keys, win, results
     global w, h, total_liquidity, font_size
@@ -887,13 +881,19 @@ def run():
     from psychopy import visual, event, gui, core, sound
     from psychopy.hardware.keyboard import Keyboard
 
-    prepare_config(cfg)
-    input_gui = gui.Dlg(title="BART / IGT")
-    input_gui.addField("SubjectName")
-    input_gui.addField("SubjectCode")
-    input_gui.addField("Gender", choices=["Male", "Female", "Other"])
-    input_gui.addField("Age")
-    input_gui.addField("Handedness", choices=["Right", "Left"])
+    catalog = load_catalog(cfg.language) if catalog is None else catalog
+    catalog.validate()
+    prepare_config(cfg, needs_number_images=catalog.rating_image_pattern is not None)
+    input_gui = gui.Dlg(title=catalog.text("app_title"))
+    for field in PARTICIPANT_FIELDS:
+        options = PARTICIPANT_CHOICES.get(field)
+        if options:
+            input_gui.addField(
+                catalog.text(f"field.{field}"),
+                choices=[catalog.text(f"choice.{value}") for value in options],
+            )
+        else:
+            input_gui.addField(catalog.text(f"field.{field}"))
     input_gui.show()
     if not input_gui.OK:
         return
@@ -902,15 +902,12 @@ def run():
     win = None
     mov = None
     try:
-        results.append(
-            dict(
-                zip(
-                    ("subjectName", "subjectCode", "gender", "age", "handedness"),
-                    input_gui.data,
-                ),
-                video=cfg.video_name,
-            )
-        )
+        metadata = dict(zip(PARTICIPANT_FIELDS, input_gui.data))
+        # Localize the dialog while keeping stored categorical values compatible.
+        for field, values in PARTICIPANT_CHOICES.items():
+            labels = [catalog.text(f"choice.{value}") for value in values]
+            metadata[field] = values[labels.index(metadata[field])]
+        results.append(dict(metadata, video=cfg.video_name))
         reset_decks()
         keys = Keyboard()
         win = visual.Window(
@@ -924,7 +921,7 @@ def run():
         myMouse = event.Mouse(win=win)
         fixation = visual.TextStim(
             win=win,
-            text="+",
+            text=catalog.text("fixation"),
             color=cfg.font_color,
             height=h,
             bold=True,
@@ -934,7 +931,7 @@ def run():
         fixation.draw()
         win.flip()
         core.wait(cfg.fixation_sleep_time)
-        survey(section="before video")
+        survey(section="before video", catalog=catalog)
         mov = visual.VlcMovieStim(
             win,
             cfg.video_path,
@@ -946,12 +943,14 @@ def run():
         )
         while not mov.isFinished:
             check_abort()
-            movie_keys = event.getKeys(keyList=["i", "r", "p"])
-            if "i" in movie_keys:
+            movie_keys = event.getKeys(
+                keyList=[cfg.controls[key] for key in ("skip", "replay", "pause")]
+            )
+            if cfg.controls["skip"] in movie_keys:
                 break
-            if "r" in movie_keys:
+            if cfg.controls["replay"] in movie_keys:
                 mov.replay()
-            if "p" in movie_keys:
+            if cfg.controls["pause"] in movie_keys:
                 if mov.isNotStarted or mov.isPaused:
                     mov.play()
                 elif mov.isPlaying:
@@ -959,31 +958,31 @@ def run():
             mov.draw()
             win.flip()
         mov.stop()
-        survey(section="after video")
+        survey(section="after video", catalog=catalog)
         for task in task_order(input_gui.data[1]):
             if task == "IGT":
-                igt_experiment()
+                igt_experiment(catalog)
             else:
-                bart_experiment()
+                bart_experiment(catalog)
 
-        dollar_win = f"شما برنده {total_liquidity:.2f} دلار شده اید."
-        rial_win = f"شما برنده {int(total_liquidity * cfg.dollar_toman)} تومان شده اید."
-        thanks = "از توجه شما سپاسگذاریم."
-        presstoend = "برای اتمام آزمون کلید SPACE را فشار دهید."
         text = visual.TextStim(
             win=win,
-            text=f"{dollar_win}\n{rial_win}\n\n{thanks}\n\n{presstoend}",
+            text=catalog.text(
+                "completion",
+                amount=total_liquidity,
+                toman=int(total_liquidity * cfg.dollar_toman),
+                advance_key=cfg.controls["advance"].upper(),
+            ),
             pos=[0, 0],
             color=cfg.bart_font_color,
-            languageStyle="Arabic",
-            font="IRANSans",
+            **catalog.text_options,
             height=font_size,
             bold=True,
             wrapWidth=w,
         )
         text.draw()
         win.flip()
-        wait_for_space()
+        wait_for_advance()
     except ExperimentAborted:
         logging.info("Session stopped by operator; completed responses retained.")
     finally:

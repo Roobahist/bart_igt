@@ -79,3 +79,19 @@ PsychoPy is absent from the local Python 3.14 environment (outside its supported
 runtime range); real GUI/video/audio startup and hardware timing have not been
 executed. Follow `workstation-checks.md` before research use. No deployment or
 merge is performed by this modernization.
+
+## Bilingual presentation follow-up
+
+Added `localization.py` with an injectable `LanguageCatalog` and JSON catalogs in
+`locales/en.json` and `locales/fa.json`. `run(catalog=...)` passes the catalog to every
+screen. Text, fonts, script direction, rating rendering and button colors live in
+catalog data. Instructions receive configured trial counts/keys/amounts. Keyboard
+actions are configured in `config.controls`; Persian remains the default.
+
+English uses native Latin numeral buttons instead of the original Persian images;
+Persian assets and scale ordinal direction remain. The participant dialog is
+localized while persisted categorical values and workbook schema stay compatible.
+Missing messages/template parameters fail preflight; media/subtitles remain shared.
+38 tests pass, including both survey flows, both task languages, injected custom
+wording/font, canonical stored metadata and catalog validation. Real bilingual
+rendering and translation/protocol validation remain workstation checks.

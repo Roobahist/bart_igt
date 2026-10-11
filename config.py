@@ -1,6 +1,16 @@
 import sys
 
 # General
+language = "fa"  # Catalog in locales/: "fa" (Persian) or "en" (English).
+controls = {
+    "advance": "space",
+    "pump": "space",
+    "collect": "return",
+    "skip": "i",
+    "replay": "r",
+    "pause": "p",
+    "abort": "escape",
+}
 fullscreen = False
 column_order = [
     "subjectName",

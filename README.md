@@ -1,6 +1,6 @@
 # BART / IGT experiment
 
-A local PsychoPy experiment with Persian instructions. Participants complete a
+A local PsychoPy experiment with Persian and English presentation. Participants complete a
 Self-Assessment Manikin (SAM) survey, watch a negative, positive or neutral video,
 complete a second survey, and perform the Iowa Gambling Task (IGT) and Balloon
 Analogue Risk Task (BART). Results are written locally to Excel.
@@ -12,7 +12,7 @@ workstation before collecting participant data. Defaults are five trials per tas
 
 Use PsychoPy Standalone **2026.2.4**, or a desktop Python **3.11/3.12** environment
 with PsychoPy installed. Install VLC of the same architecture as your Python
-runtime, and install the supplied IRANSans fonts for Persian rendering. Check the
+runtime, and install the supplied IRANSans fonts for Persian rendering. English uses Arial. Check the
 rights to the fonts and other supplied media before redistributing them.
 
 ```sh
@@ -39,6 +39,9 @@ Edit `config.py`; there are no required environment variables or remote services
 Paths are resolved against the repository, so launching from another directory
 works. Absolute paths are also accepted.
 
+- `language`: `"fa"` (default Persian) or `"en"` (English), selecting a JSON catalog.
+- `controls`: PsychoPy key names for advance, pump, collect, skip, replay, pause and abort;
+  instructions display the configured keys.
 - `which_video`: 1 negative, 2 positive, 3 neutral.
 - `igt_skip`, `bart_skip`: set to 1 to skip the corresponding task.
 - Trial counts, IGT gains/losses, BART capacity/reward, colors, fullscreen and
@@ -59,6 +62,39 @@ Odd numeric subject codes run BART first; even or nonnumeric codes run IGT first
 IGT losses are shuffled independently per deck in complete configured blocks.
 BART's conditional burst probability remains `1 / (capacity + 1 - pumps)`;
 bursting at capacity is certain. Neither algorithm is reseeded automatically.
+
+## Languages and injection
+
+Set `language = "en"` in `config.py` to run in English. Persian remains the default.
+Alternatively, inject the presentation dependency directly, without changing configuration:
+
+```python
+from localization import load_catalog
+from main import run
+
+run(catalog=load_catalog("en"))
+```
+
+`run()` passes this same catalog to IGT, BART and both surveys. Participant-facing
+strings live in `locales/en.json` and `locales/fa.json`; fonts, script direction,
+numeral rendering and rating button colors are also catalog data. English uses
+Latin 1–9 text buttons; Persian keeps the original numeral images. IGT label/value
+positions follow the catalog's reading direction. Media are shared; choosing English
+does not translate subtitles or speech embedded in video assets.
+
+Edit a catalog to change wording, or load one from a separate directory with
+the `directory` argument of `load_catalog`. A custom `LanguageCatalog` can also
+be supplied through the `catalog` argument of `run`. Every catalog must cover the English catalog's message keys
+and preserve each message's template parameter names. Templates receive live
+trial counts, key names and amounts. Missing keys or mismatched parameters fail
+before participant collection; there is no silent fallback to another language.
+For image ratings, `rating_image_pattern` refers to configured numeral asset names;
+set it to `null` for native text buttons.
+
+Dialog labels and choices are translated, but stored column names, section names,
+gender and handedness values remain canonical for compatible analysis. Select
+and record the study language in the study protocol. Validate new wording and
+rendering on the actual workstation before collecting data.
 
 ## Results and recovery
 
@@ -100,7 +136,7 @@ python -m pip install -r requirements-dev.txt
 ruff check .
 ruff format --check .
 python -m unittest discover -s tests -v
-python -m compileall -q main.py bart.py igt.py config.py session.py
+python -m compileall -q main.py bart.py igt.py config.py session.py localization.py
 pip-audit --strict --no-deps --disable-pip -r requirements-results.txt
 ```
 
@@ -118,7 +154,8 @@ interactive desktop experiment.
 - `main.py`: participant dialog, presentation, input and session orchestration.
 - `igt.py`, `bart.py`: task randomization, independently testable without PsychoPy.
 - `session.py`: counterbalancing, setting/asset validation, journaling and export.
-- `config.py`: study parameters and media paths.
+- `config.py`: study parameters, language, controls and media paths.
+- `localization.py`, `locales/`: injectable catalogs and language-specific text/rendering data.
 - `images/`, `videos/`, `sounds/`, `fonts/`: existing experiment assets.
 - `tests/`: task rules, scripted BART input, orchestration and storage regressions.
 

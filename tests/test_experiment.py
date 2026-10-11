@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import patch
 
 import main
+from localization import load_catalog
 
 
 class Stimulus:
@@ -16,7 +17,7 @@ class Stimulus:
 
 
 class BartFlowTests(unittest.TestCase):
-    def run_frames(self, frames, burst=False, factor=None):
+    def run_frames(self, frames, burst=False, factor=None, catalog=None):
         state = {}
         script = iter(frames)
         rows = []
@@ -50,11 +51,11 @@ class BartFlowTests(unittest.TestCase):
                 bart_collect_sound=0,
                 bart_blowing_factor=factor or main.cfg.bart_blowing_factor,
             ),
-            patch.object(main, "wait_for_space"),
+            patch.object(main, "wait_for_advance"),
             patch.object(main, "check_abort", side_effect=tick),
             patch.object(main, "burst_or_not", return_value=burst),
         ):
-            main.bart_experiment()
+            main.bart_experiment(load_catalog("fa") if catalog is None else catalog)
             return rows, main.total_liquidity
 
     def test_held_space_pumps_once_and_collects_on_release(self):
@@ -89,15 +90,47 @@ class BartFlowTests(unittest.TestCase):
         self.assertEqual(rows[0]["pumps"], 2)
         self.assertAlmostEqual(total, 2 * main.cfg.bart_blow_addition)
 
+    def test_english_task_preserves_collection_rules(self):
+        rows, total = self.run_frames(
+            [{"space": True}, {}, {"return": True}, {}], catalog=load_catalog("en")
+        )
+        self.assertEqual(rows[0]["pumps"], 1)
+        self.assertAlmostEqual(total, main.cfg.bart_blow_addition)
+
+    def test_configured_pump_and_collect_keys_drive_input(self):
+        controls = dict(main.cfg.controls, pump="p", collect="c")
+        with patch.object(main.cfg, "controls", controls):
+            rows, total = self.run_frames(
+                [{"p": True}, {}, {"c": True}, {}], catalog=load_catalog("en")
+            )
+        self.assertEqual(rows[0]["pumps"], 1)
+        self.assertAlmostEqual(total, main.cfg.bart_blow_addition)
+
 
 class OrchestrationTests(unittest.TestCase):
-    def exercise(self, *, cancel=False, window_error=None, task_error=None, export_error=None):
+    def exercise(
+        self, *, cancel=False, window_error=None, task_error=None, export_error=None, catalog=None
+    ):
         from unittest.mock import Mock
         import sys
 
+        presentation = load_catalog(main.cfg.language) if catalog is None else catalog
+        texts = []
+
+        def make_text(*args, **kwargs):
+            stimulus = Stimulus(*args, **kwargs)
+            texts.append(stimulus)
+            return stimulus
+
         dialog = SimpleNamespace(
             OK=not cancel,
-            data=["name", "3", "Other", "25", "Right"],
+            data=[
+                "name",
+                "3",
+                presentation.text("choice.Other"),
+                "25",
+                presentation.text("choice.Right"),
+            ],
             addField=lambda *a, **kw: None,
             show=lambda: None,
         )
@@ -107,7 +140,7 @@ class OrchestrationTests(unittest.TestCase):
         results.save.side_effect = export_error
         visual = SimpleNamespace(
             Window=Mock(return_value=window, side_effect=window_error),
-            TextStim=Stimulus,
+            TextStim=make_text,
             VlcMovieStim=Mock(return_value=movie),
         )
         psychopy = SimpleNamespace(
@@ -133,11 +166,11 @@ class OrchestrationTests(unittest.TestCase):
             patch.object(main, "survey") as survey,
             patch.object(main, "bart_experiment", side_effect=task_error) as bart,
             patch.object(main, "igt_experiment") as igt,
-            patch.object(main, "wait_for_space"),
+            patch.object(main, "wait_for_advance"),
         ):
             error = None
             try:
-                main.run()
+                main.run(catalog=catalog)
             except Exception as caught:
                 error = caught
         return SimpleNamespace(
@@ -149,6 +182,7 @@ class OrchestrationTests(unittest.TestCase):
             survey=survey,
             bart=bart,
             igt=igt,
+            texts=texts,
         )
 
     def test_success_runs_counterbalanced_tasks_once_and_saves(self):
@@ -189,9 +223,51 @@ class OrchestrationTests(unittest.TestCase):
         result.results.close.assert_called_once()
         result.window.close.assert_called_once()
 
+    def test_injected_english_catalog_reaches_every_screen_and_normalizes_metadata(self):
+        from dataclasses import replace
+
+        catalog = load_catalog("en")
+        catalog = replace(
+            catalog,
+            font="Injected Font",
+            messages=dict(
+                catalog.messages,
+                completion="CUSTOM: {amount:.2f} / {toman}. Press {advance_key}.",
+            ),
+        )
+        with patch.object(main, "load_catalog", side_effect=AssertionError("must use injection")):
+            result = self.exercise(catalog=catalog)
+        self.assertIsNone(result.error)
+        result.bart.assert_called_once_with(catalog)
+        result.igt.assert_called_once_with(catalog)
+        self.assertTrue(
+            all(call.kwargs["catalog"] is catalog for call in result.survey.call_args_list)
+        )
+        record = result.results.append.call_args.args[0]
+        self.assertEqual(record["gender"], "Other")
+        self.assertEqual(record["handedness"], "Right")
+        self.assertIn("CUSTOM:", result.texts[-1].text)
+        self.assertEqual(result.texts[-1].font, "Injected Font")
+        self.assertEqual(result.texts[-1].languageStyle, "LTR")
+
+    def test_english_selection_uses_configuration(self):
+        with patch.object(main.cfg, "language", "en"):
+            result = self.exercise()
+        self.assertIsNone(result.error)
+        self.assertIn("Thank you", result.texts[-1].text)
+        self.assertEqual(result.texts[-1].languageStyle, "LTR")
+
+    def test_persian_dialog_values_remain_canonical_in_results(self):
+        result = self.exercise(catalog=load_catalog("fa"))
+        self.assertIsNone(result.error)
+        record = result.results.append.call_args.args[0]
+        self.assertEqual(record["gender"], "Other")
+        self.assertEqual(record["handedness"], "Right")
+        self.assertEqual(result.texts[-1].languageStyle, "Arabic")
+
 
 class IgtFlowTests(unittest.TestCase):
-    def test_one_click_records_one_choice_and_updates_net_reward(self):
+    def run_click(self, catalog):
         from unittest.mock import Mock
 
         rows = []
@@ -216,10 +292,10 @@ class IgtFlowTests(unittest.TestCase):
                 total_liquidity=0,
             ),
             patch.multiple(main.cfg, igt_total_number_of_trials=1, igt_sleep_time=0),
-            patch.object(main, "wait_for_space"),
+            patch.object(main, "wait_for_advance"),
             patch.object(main, "gain_loss", return_value=(1, 0.5)) as draw,
         ):
-            main.igt_experiment()
+            main.igt_experiment(catalog)
             self.assertAlmostEqual(main.total_liquidity, 0.5)
         draw.assert_called_once_with(1)
         self.assertEqual(len(rows), 1)
@@ -227,3 +303,8 @@ class IgtFlowTests(unittest.TestCase):
         self.assertEqual(rows[0]["gain"], 1)
         self.assertEqual(rows[0]["loss"], 0.5)
         self.assertGreaterEqual(rows[0]["RT"], 0)
+
+    def test_one_click_records_one_choice_and_updates_net_reward(self):
+        for language in ("fa", "en"):
+            with self.subTest(language=language):
+                self.run_click(load_catalog(language))

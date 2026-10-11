@@ -39,7 +39,7 @@ def task_order(subject_code):
     return ("BART", "IGT") if odd else ("IGT", "BART")
 
 
-def prepare_config(cfg):
+def prepare_config(cfg, *, needs_number_images=True):
     """Validate study settings and resolve assets against the repository root."""
     if (
         len(cfg.column_order) != len(set(cfg.column_order))
@@ -70,8 +70,16 @@ def prepare_config(cfg):
         for loss in losses:
             _nonnegative(loss, f"deck {deck} loss")
 
+    control_names = {"advance", "pump", "collect", "skip", "replay", "pause", "abort"}
+    if set(cfg.controls) != control_names or not all(
+        isinstance(value, str) and value for value in cfg.controls.values()
+    ):
+        raise ValueError("controls must define a nonempty key name for every experiment action")
+
     paths = [name for name in vars(cfg) if name.endswith("_path")]
     required = [name for name in paths if name.startswith(("arousal_", "pleasure_", "number"))]
+    if not needs_number_images:
+        required = [name for name in required if not name.startswith("number")]
     required.append("video_path")
     if not cfg.igt_skip:
         required += ["igt_card_back_path", "igt_card_front_path"]

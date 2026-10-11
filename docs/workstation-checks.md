@@ -4,7 +4,7 @@ These checks require the actual participant workstation and are not automated CI
 
 1. Install PsychoPy 2026.2.4 and same-architecture VLC; verify desktop graphics,
    keyboard backend, audio backend, MP3 decoding and installed IRANSans fonts.
-   Confirm Persian shaping, endpoint labels and all survey numbers at the intended
+   Confirm Persian shaping and English LTR rendering, endpoint labels and all survey numbers at the intended
    resolution/fullscreen setting. Review media redistribution rights separately.
 2. Run `main.py` from PsychoPy Coder and from a different working directory.
    Cancel the participant dialog: no new output should appear.
@@ -28,3 +28,9 @@ These checks require the actual participant workstation and are not automated CI
     installed-environment vulnerability audit before deploying this workstation.
 
 No hardware timing precision or desktop compatibility is inferred from mocked tests.
+
+Run the survey/task checks with both `language = "fa"` and `language = "en"`.
+Confirm English uses Latin rating buttons, Persian keeps its original digit images,
+and stored categorical/ordinal values remain the same. Check configured keys match
+instruction text. Videos are shared assets; embedded speech/subtitles do not change
+with the interface language. Review English wording against the approved protocol.

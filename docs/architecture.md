@@ -6,7 +6,9 @@ No servers, network integrations, databases or deployment services are involved.
 ```mermaid
 flowchart LR
     Operator[Operator / participant] --> Main[main.py: PsychoPy presentation]
-    Config[config.py: study parameters] --> Main
+    Config[config.py: study parameters and language] --> Main
+    Catalogs[locales: text, font, script, rating settings] --> Localization[localization.py: injected catalog]
+    Localization --> Main
     Assets[Local images, video, sounds, fonts] --> Main
     Main --> IGT[igt.py: shuffled deck losses]
     Main --> BART[bart.py: burst hazard]
@@ -33,3 +35,9 @@ using openpyxl. The journal survives failed exports or process interruption.
 
 Archify is unavailable in this environment. This source-backed Mermaid overview
 is a small, editable fallback; no Archify generation or validation is claimed.
+
+Presentation dependency: `run(catalog=None)` loads the configured language when
+no catalog is supplied, then passes that object explicitly into `igt_experiment`,
+`bart_experiment` and `survey`. Translations remain independent of task rules.
+There is no global language switch or dependency injection framework. Catalog
+coverage and template parameters are checked before opening the participant dialog.
