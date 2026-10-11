@@ -31,3 +31,9 @@ Desktop compatibility and timing require the checklist in `docs/workstation-chec
 
 If giving the user directly reusable content with placeholders, put a bold notice
 at the top that the placeholders need correct values before use.
+
+English screenshots in `docs/screenshots/` are genuine PsychoPy frames captured
+remotely with scripted demonstration input. Use the hosted **English screenshots**
+workflow to regenerate them; never install PsychoPy on the owner's machine without
+explicit authorization. Keep provenance and limits with the images; do not present
+scripted captures as physical timing, audio/video or participant-session validation.

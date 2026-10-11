@@ -1,0 +1,89 @@
+{
+  "description": "Real PsychoPy OpenGL frames, automated demonstration input; no participant session",
+  "language": "en",
+  "psychopy": "2026.2.4",
+  "python": "3.11.17",
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "source_commit": "16cd7720c05b9a7244dbc0a4ce82c7f481b2cf7d",
+  "workflow_run": "38170869645",
+  "capture_method": "Window.getMovieFrame(back) before actual Window.flip",
+  "screenshots": [
+    "sam-survey",
+    "sam-selected",
+    "igt-instructions",
+    "igt-choice",
+    "igt-feedback",
+    "bart-instructions",
+    "bart-balloon"
+  ],
+  "demo_settings": {
+    "igt_trials": 5,
+    "bart_trials": 1,
+    "bart_pumps": 20,
+    "seed": 1,
+    "sound": false,
+    "igt_feedback_wait": 0
+  },
+  "not_verified": [
+    "physical input",
+    "hardware timing",
+    "audio",
+    "VLC video",
+    "participant dialog"
+  ],
+  "synthetic_responses": [
+    {
+      "arousal": 5,
+      "pleasure": 5,
+      "section": "before video"
+    },
+    {
+      "section": "IGT",
+      "trial": 1,
+      "choice": 1,
+      "gain": 1,
+      "loss": 2,
+      "RT": 0.06692211100001089
+    },
+    {
+      "section": "IGT",
+      "trial": 2,
+      "choice": 1,
+      "gain": 1,
+      "loss": 3,
+      "RT": 0.00409682400000122
+    },
+    {
+      "section": "IGT",
+      "trial": 3,
+      "choice": 1,
+      "gain": 1,
+      "loss": 3.5,
+      "RT": 0.004092655999997419
+    },
+    {
+      "section": "IGT",
+      "trial": 4,
+      "choice": 1,
+      "gain": 1,
+      "loss": 2.5,
+      "RT": 0.004378141000003666
+    },
+    {
+      "section": "IGT",
+      "trial": 5,
+      "choice": 1,
+      "gain": 1,
+      "loss": 1.5,
+      "RT": 0.004185238999994567
+    },
+    {
+      "section": "BART",
+      "trial": 1,
+      "pumps": 20,
+      "gain": 1.0,
+      "explosion": 0,
+      "RT": 0.13911652999999546
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 name: English screenshots
 on:
+  workflow_dispatch:
   push:
     branches: [docs/english-screenshots]
     paths:

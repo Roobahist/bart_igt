@@ -94,7 +94,8 @@ def capture(directory):
     try:
         phase = "survey"
         inputs = DemoInput(
-            [{"mouse": True}, {"space": True}, {}], target=lambda stimulus: stimulus.pos[0] == 0
+            [{"mouse": True}, {main.cfg.controls["advance"]: True}, {}],
+            target=lambda stimulus: stimulus.pos[0] == 0,
         )
         main.keys = main.myMouse = inputs
         with patch.object(main, "check_abort", side_effect=inputs.tick):
@@ -121,7 +122,8 @@ def capture(directory):
 
         phase, frame_number = "bart", 0
         inputs = DemoInput(
-            [state for _ in range(20) for state in ({"space": True}, {})] + [{"return": True}, {}],
+            [state for _ in range(20) for state in ({main.cfg.controls["pump"]: True}, {})]
+            + [{main.cfg.controls["collect"]: True}, {}],
             target=lambda stimulus: False,
         )
         main.keys = inputs

@@ -8,6 +8,21 @@ Analogue Risk Task (BART). Results are written locally to Excel.
 This is research software: review the study settings and validate the actual
 workstation before collecting participant data. Defaults are five trials per task.
 
+## English screenshots
+
+Real PsychoPy-rendered English interface frames, captured on a disposable
+GitHub-hosted runner with scripted demonstration input. No participant data or
+local PsychoPy installation was used. These demonstrate presentation, not
+hardware timing, audio, video playback or a complete participant session.
+
+![English SAM survey](docs/screenshots/sam-selected.png)
+
+![English IGT card selection](docs/screenshots/igt-choice.png)
+
+![English BART balloon play](docs/screenshots/bart-balloon.png)
+
+See the [full screenshot gallery and capture details](docs/screenshots/README.md).
+
 ## Setup and running
 
 Use PsychoPy Standalone **2026.2.4**, or a desktop Python **3.11/3.12** environment
