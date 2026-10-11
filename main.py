@@ -89,6 +89,7 @@ def igt_experiment(catalog):
             balance,
             selected=selected if feedback else None,
             outcome=(gain, loss) if feedback else None,
+            pressed=selected if mouse_down else None,
         )
         win.flip()
         if feedback:

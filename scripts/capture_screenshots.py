@@ -73,7 +73,8 @@ def capture(directory):
     schedule = {
         "survey": {1: "sam-survey", 3: "sam-selected"},
         "igt": {1: "igt-instructions", 2: "igt-choice", 3: "igt-feedback"},
-        "bart": {1: "bart-instructions", 22: "bart-balloon"},
+        "bart": {1: "bart-instructions", 2: "bart-start", 22: "bart-balloon"},
+        "bart-large": {129: "bart-large-balloon"},
     }
     original_flip = window.flip
 
@@ -141,7 +142,7 @@ def capture(directory):
         ):
             main.bart_experiment(catalog)
 
-        assert len(captures) == 7, captures
+        assert len(captures) == 8, captures
         assert rows[0] == {"arousal": 5, "pleasure": 5, "section": "before video"}
         assert (
             len([row for row in rows if row["section"] == "IGT"])
@@ -149,6 +150,31 @@ def capture(directory):
         )
         assert rows[-1]["section"] == "BART" and rows[-1]["pumps"] == 20
         assert rows[-1]["explosion"] == 0
+        # A seeded second demonstration reaches 127 pumps through the real hazard
+        # function; no outcome is forced or burst probability suppressed.
+        phase, frame_number = "bart-large", 0
+        inputs = DemoInput(
+            [state for _ in range(127) for state in ({main.cfg.controls["pump"]: True}, {})]
+            + [{main.cfg.controls["collect"]: True}, {}],
+            target=lambda stimulus: False,
+        )
+        main.keys = inputs
+        random.seed(219)
+        with (
+            patch.object(main, "check_abort", side_effect=inputs.tick),
+            patch.object(main, "wait_for_advance"),
+            patch.multiple(
+                main.cfg,
+                bart_total_number_of_trials=1,
+                bart_blow_sound=0,
+                bart_burst_sound=0,
+                bart_collect_sound=0,
+            ),
+        ):
+            main.bart_experiment(catalog)
+        assert len(captures) == 9, captures
+        assert rows[-1]["pumps"] == 127 and rows[-1]["explosion"] == 0
+
         provenance = {
             "description": "Real PsychoPy OpenGL frames, automated demonstration input; no participant session",
             "language": "en",
@@ -162,6 +188,7 @@ def capture(directory):
             "demo_settings": {
                 "igt_trials": main.cfg.igt_total_number_of_trials,
                 "bart_trials": 1,
+                "additional_bart_demo": {"pumps": 127, "seed": 219},
                 "bart_pumps": 20,
                 "seed": 1,
                 "sound": False,

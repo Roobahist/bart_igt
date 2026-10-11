@@ -228,7 +228,7 @@ class IgtScreen(TaskScreen):
         )
         self.rule = self.rect((0, -self.h * 0.355), self.w * 0.82, 1, fill="border")
 
-    def draw(self, trial, trials, balance, *, selected=None, outcome=None):
+    def draw(self, trial, trials, balance, *, selected=None, outcome=None, pressed=None):
         self.background()
         self.balance.text = self.catalog.text("igt_amount", amount=balance)
         self.prompt.text = self.catalog.text("igt_result" if outcome is not None else "igt_choose")
@@ -244,6 +244,10 @@ class IgtScreen(TaskScreen):
             stimulus.draw()
         for index in range(4):
             revealed = selected == index + 1 and outcome is not None
+            self.backs[index][4].lineColor = self.colors[
+                "on_deck" if pressed == index + 1 else "pattern"
+            ]
+            self.backs[index][4].lineWidth = 2 if pressed == index + 1 else 1
             for stimulus in self.fronts[index] if revealed else self.backs[index]:
                 stimulus.draw()
             self.labels[index].draw()
@@ -284,6 +288,7 @@ class BartScreen(TaskScreen):
             size=18,
             color="muted",
             anchorHoriz="left" if catalog.is_rtl else "right",
+            alignText="left" if catalog.is_rtl else "right",
         )
         self.rule = self.rect((0, self.h * 0.28), self.w * 0.82, 1, fill="border")
         self.ledger_rule = self.rect((ledger_x, self.h * 0.025), self.w * 0.23, 1, fill="border")
@@ -317,7 +322,19 @@ class BartScreen(TaskScreen):
             body, (self.x, 0), (1, 1), fill="balloon", border="balloon_edge", line_width=1.5
         )
         self.highlight = self.shape(
-            [(-0.26, -0.13), (-0.34, 0.02), (-0.30, 0.20), (-0.19, 0.34)],
+            [
+                (
+                    (1 - t) ** 3 * (-0.19)
+                    + 3 * (1 - t) ** 2 * t * (-0.34)
+                    + 3 * (1 - t) * t * t * (-0.39)
+                    + t**3 * (-0.26),
+                    (1 - t) ** 3 * 0.34
+                    + 3 * (1 - t) ** 2 * t * 0.19
+                    + 3 * (1 - t) * t * t * 0.01
+                    + t**3 * (-0.13),
+                )
+                for t in [i / 32 for i in range(33)]
+            ],
             (self.x, 0),
             (1, 1),
             border="balloon_light",
