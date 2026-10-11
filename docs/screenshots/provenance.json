@@ -4,8 +4,8 @@
   "psychopy": "2026.2.4",
   "python": "3.11.17",
   "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
-  "source_commit": "e9caef145451a32aa8998e086de8d1accd260efb",
-  "workflow_run": "38171823962",
+  "source_commit": "965ca748f4b08c7210870e9e927be21cf068a896",
+  "workflow_run": "38172580303",
   "capture_method": "Window.getMovieFrame(back) before actual Window.flip",
   "screenshots": [
     "sam-survey",
@@ -14,11 +14,17 @@
     "igt-choice",
     "igt-feedback",
     "bart-instructions",
-    "bart-balloon"
+    "bart-start",
+    "bart-balloon",
+    "bart-large-balloon"
   ],
   "demo_settings": {
     "igt_trials": 5,
     "bart_trials": 1,
+    "additional_bart_demo": {
+      "pumps": 127,
+      "seed": 219
+    },
     "bart_pumps": 20,
     "seed": 1,
     "sound": false,
@@ -43,7 +49,7 @@
       "choice": 1,
       "gain": 1,
       "loss": 2,
-      "RT": 0.021156064999999558
+      "RT": 0.056342102000002114
     },
     {
       "section": "IGT",
@@ -51,7 +57,7 @@
       "choice": 1,
       "gain": 1,
       "loss": 3,
-      "RT": 0.007476285999999277
+      "RT": 0.018112127999998506
     },
     {
       "section": "IGT",
@@ -59,7 +65,7 @@
       "choice": 1,
       "gain": 1,
       "loss": 3.5,
-      "RT": 0.006222371000006888
+      "RT": 0.01765546400000062
     },
     {
       "section": "IGT",
@@ -67,7 +73,7 @@
       "choice": 1,
       "gain": 1,
       "loss": 2.5,
-      "RT": 0.006933744999997771
+      "RT": 0.017456722999995122
     },
     {
       "section": "IGT",
@@ -75,7 +81,7 @@
       "choice": 1,
       "gain": 1,
       "loss": 1.5,
-      "RT": 0.0062495519999998805
+      "RT": 0.016995260000001622
     },
     {
       "section": "BART",
@@ -83,7 +89,15 @@
       "pumps": 20,
       "gain": 1.0,
       "explosion": 0,
-      "RT": 0.09534255300000893
+      "RT": 0.21535263799999882
+    },
+    {
+      "section": "BART",
+      "trial": 1,
+      "pumps": 127,
+      "gain": 6.3500000000000005,
+      "explosion": 0,
+      "RT": 1.2397543989999917
     }
   ]
 }
