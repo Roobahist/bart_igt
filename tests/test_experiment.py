@@ -30,7 +30,9 @@ class BartFlowTests(unittest.TestCase):
             patch.multiple(
                 main,
                 create=True,
-                visual=SimpleNamespace(TextStim=Stimulus, ImageStim=Stimulus, Rect=Stimulus),
+                visual=SimpleNamespace(
+                    TextStim=Stimulus, ImageStim=Stimulus, Rect=Stimulus, ShapeStim=Stimulus
+                ),
                 win=SimpleNamespace(flip=lambda: None, size=(1200, 675)),
                 core=SimpleNamespace(wait=lambda _: None),
                 keys=SimpleNamespace(getState=lambda key: state.get(key, False)),
@@ -281,7 +283,9 @@ class IgtFlowTests(unittest.TestCase):
             patch.multiple(
                 main,
                 create=True,
-                visual=SimpleNamespace(TextStim=Stimulus, ImageStim=Stimulus, Rect=Stimulus),
+                visual=SimpleNamespace(
+                    TextStim=Stimulus, ImageStim=Stimulus, Rect=Stimulus, ShapeStim=Stimulus
+                ),
                 win=SimpleNamespace(flip=lambda: None, size=(1200, 675)),
                 core=SimpleNamespace(wait=lambda _: None),
                 keys=SimpleNamespace(getState=lambda _: False),

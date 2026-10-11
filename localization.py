@@ -19,6 +19,7 @@ class LanguageCatalog:
     language_style: str
     rating_image_pattern: str | None
     rating_colors: Mapping[str, list[float]]
+    display_font: str | None = None
 
     def text(self, key: str, **values) -> str:
         """Render a message using live study values, rather than baked-in counts."""
@@ -88,6 +89,11 @@ def load_catalog(language: str, *, directory: Path = LOCALES_DIRECTORY) -> Langu
             or not all(isinstance(value, (int, float)) and -1 <= value <= 1 for value in color)
         ):
             raise ValueError(f"Catalog rating_colors.{state} must be a normalized RGB triplet")
-    catalog = LanguageCatalog(messages, data["font"], data["language_style"], pattern, colors)
+    display_font = data.get("display_font")
+    if display_font is not None and (not isinstance(display_font, str) or not display_font):
+        raise ValueError("display_font must be a nonempty string or null")
+    catalog = LanguageCatalog(
+        messages, data["font"], data["language_style"], pattern, colors, display_font
+    )
     catalog.validate()
     return catalog

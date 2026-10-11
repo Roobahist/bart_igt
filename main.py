@@ -8,7 +8,7 @@ from igt import gain_loss, reset_decks
 from bart import burst_or_not
 from session import SessionResults, task_order, prepare_config
 from localization import load_catalog
-from ui import IgtScreen, TaskScreen
+from ui import IgtScreen, BartScreen
 
 PARTICIPANT_FIELDS = ("subjectName", "subjectCode", "gender", "age", "handedness")
 PARTICIPANT_CHOICES = {"gender": ("Male", "Female", "Other"), "handedness": ("Right", "Left")}
@@ -106,7 +106,7 @@ def bart_experiment(catalog):
     if not cfg.bart_skip:
         # Instructions
 
-        screen = TaskScreen(visual, win, catalog, cfg.ui_theme)
+        screen = BartScreen(visual, win, catalog, cfg.ui_theme, cfg.controls, cfg.bart_presentation)
         screen.instructions(
             "bart",
             catalog.text(
@@ -131,80 +131,6 @@ def bart_experiment(catalog):
 
         # Experiment
 
-        min_balloon_size = [w / 40, h / 20]
-        max_balloon_size = [w / 2, h]
-
-        rope_img_pos = [0, -h / 2]
-        balloon_img_pos = [0, -113 * h / 280]
-        rope_img = visual.ImageStim(
-            win=win, image=cfg.bart_rope_path, units="pix", pos=rope_img_pos, size=[w / 11, h / 7]
-        )
-        balloon_img = visual.ImageStim(
-            win=win,
-            image=cfg.bart_balloon_path,
-            units="pix",
-            pos=balloon_img_pos,
-            size=min_balloon_size,
-        )
-
-        def balloon_pos_size_calculator(blow_num):
-
-            balloon_size = [
-                min_balloon_size[0]
-                + (
-                    (blow_num)
-                    * ((max_balloon_size[0] - min_balloon_size[0]) / cfg.bart_max_balloon_capacity)
-                ),
-                min_balloon_size[1]
-                + (
-                    (blow_num)
-                    * ((max_balloon_size[1] - min_balloon_size[1]) / cfg.bart_max_balloon_capacity)
-                ),
-            ]
-            balloon_pos = [0, (-3 * h / 7) + balloon_size[1] / 2]
-
-            return balloon_size, balloon_pos
-
-        current_bank_text = visual.TextStim(
-            win=win,
-            text=catalog.text("balloon_value", amount=0),
-            pos=[0, h * 0.33],
-            color=screen.colors["ink"],
-            **catalog.text_options,
-            height=font_size,
-            bold=True,
-            wrapWidth=w,
-        )
-
-        trial_number_text = visual.TextStim(
-            win=win,
-            text=catalog.text("balloon_trial", number=1),
-            pos=[
-                -(w / 2 - (distance_from_vertical_edges)),
-                h * 0.42,
-            ],
-            anchorHoriz="left",
-            alignText="left",
-            color=screen.colors["ink"],
-            **catalog.text_options,
-            height=font_size,
-            bold=True,
-            wrapWidth=w,
-        )
-
-        main_bank_text = visual.TextStim(
-            win=win,
-            text=catalog.text("bank_balance", amount=0),
-            pos=[(w / 2) - distance_from_vertical_edges, h * 0.42],
-            anchorHoriz="right",
-            alignText="right",
-            color=screen.colors["ink"],
-            **catalog.text_options,
-            height=font_size,
-            bold=True,
-            wrapWidth=w,
-        )
-
         trial_number = 1
         main_liquidity = 0
         break_break = 0
@@ -218,16 +144,14 @@ def bart_experiment(catalog):
             current_liquidity = 0
             space_counter = 0
 
-            balloon_img.size = min_balloon_size
-            balloon_img.pos = balloon_img_pos
-            current_bank_text.text = catalog.text("balloon_value", amount=0)
-            trial_number_text.text = catalog.text("balloon_trial", number=trial_number)
-
-            rope_img.draw()
-            balloon_img.draw()
-            current_bank_text.draw()
-            trial_number_text.draw()
-            main_bank_text.draw()
+            screen.draw(
+                trial_number,
+                cfg.bart_total_number_of_trials,
+                0,
+                main_liquidity,
+                0,
+                cfg.bart_max_balloon_capacity,
+            )
 
             win.flip()
             last_time = time.perf_counter()
@@ -243,24 +167,19 @@ def bart_experiment(catalog):
                     if (space_counter - 1) % cfg.bart_blowing_factor == 0:
                         blow_num += 1
                         if not burst_or_not(blow_num):
-                            balloon_size, balloon_pos = balloon_pos_size_calculator(blow_num)
-
-                            balloon_img.size = balloon_size
-                            balloon_img.pos = balloon_pos
-
                             current_liquidity = blow_num * cfg.bart_blow_addition
-                            current_bank_text.text = catalog.text(
-                                "balloon_value", amount=current_liquidity
-                            )
 
                             if cfg.bart_blow_sound:
                                 sounds["blow"].play()
 
-                            rope_img.draw()
-                            balloon_img.draw()
-                            current_bank_text.draw()
-                            trial_number_text.draw()
-                            main_bank_text.draw()
+                            screen.draw(
+                                trial_number,
+                                cfg.bart_total_number_of_trials,
+                                current_liquidity,
+                                main_liquidity,
+                                blow_num,
+                                cfg.bart_max_balloon_capacity,
+                            )
                             win.flip()
 
                         else:
@@ -317,7 +236,6 @@ def bart_experiment(catalog):
 
             if collected:
                 main_liquidity += current_liquidity
-                main_bank_text.text = catalog.text("bank_balance", amount=main_liquidity)
 
             trial_number += 1
 

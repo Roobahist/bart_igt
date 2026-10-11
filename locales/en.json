@@ -55,6 +55,12 @@
     "igt_loss_amount": "−${amount:.2f}",
     "igt_balance_value": "Balance  ${amount:.2f}",
     "igt_progress": "Choice {number} of {trials}",
-    "igt_result": "Your result"
-  }
+    "igt_result": "Your result",
+    "bart_value_label": "This balloon",
+    "bart_bank_label": "Banked",
+    "bart_pump": "Pump",
+    "bart_collect": "Collect",
+    "bart_progress": "Balloon {number} of {trials}"
+  },
+  "display_font": "Georgia"
 }
