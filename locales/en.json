@@ -54,6 +54,7 @@
     "igt_gain_amount": "+${amount:.2f}",
     "igt_loss_amount": "−${amount:.2f}",
     "igt_balance_value": "Balance  ${amount:.2f}",
-    "igt_progress": "Choice {number} of {trials}"
+    "igt_progress": "Choice {number} of {trials}",
+    "igt_result": "Your result"
   }
 }

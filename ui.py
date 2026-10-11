@@ -126,6 +126,7 @@ class IgtScreen(TaskScreen):
     def draw(self, trial, trials, balance, *, selected=None, outcome=None):
         self.balance.text = self.catalog.text("igt_balance_value", amount=balance)
         self.progress.text = self.catalog.text("igt_progress", number=trial, trials=trials)
+        self.prompt.text = self.catalog.text("igt_result" if outcome is not None else "igt_choose")
         for stimulus in (self.title, self.balance, self.divider, self.prompt, self.progress):
             stimulus.draw()
         for index, card in enumerate(self.cards):
@@ -137,6 +138,8 @@ class IgtScreen(TaskScreen):
             self.labels[index].draw()
             if revealed:
                 gain, loss = outcome
+                self.gains[index].color = self.colors["gain" if gain else "muted"]
+                self.losses[index].color = self.colors["loss" if loss else "muted"]
                 self.gains[index].text = self.catalog.text("igt_gain_amount", amount=gain)
                 self.losses[index].text = self.catalog.text("igt_loss_amount", amount=loss)
                 for stimulus in (

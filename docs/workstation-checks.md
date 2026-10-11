@@ -11,7 +11,9 @@ These checks require the actual participant workstation and are not automated CI
 3. Use a test subject with an even code and then an odd code. Confirm task ordering,
    two required survey ratings, configured trial counts and correct metadata.
 4. For each video choice test play, pause/resume (`p`), replay (`r`) and skip (`i`).
-5. Click IGT cards once per press/release; verify feedback, bank totals, trial counts
+5. Click each of the four IGT cards once per press/release; verify gain/loss labels
+   and signed amounts fit inside the selected card in both languages (including a
+   zero loss and the largest configured loss), then verify bank totals, trial counts
    and recorded choices/gains/losses. Test the task skip key.
 6. Hold Space in BART with the default setting: one pump per press. Release and
    press again; test banking on Enter release and zero gain after a burst. Skip a

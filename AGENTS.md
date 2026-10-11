@@ -4,7 +4,8 @@ This is a Persian/English PsychoPy desktop research experiment, not a web applic
 `main.py` orchestrates SAM → video → SAM → counterbalanced IGT/BART → payout screen.
 `igt.py` and `bart.py` preserve study randomization; `session.py` owns local result
 storage and configuration validation. `localization.py` loads JSON catalogs from `locales/`. Assets and study settings live in the
-existing directories and `config.py`. `main.py` is the single application entry point.
+existing directories and `config.py`. `main.py` is the single application entry point. `ui.py` holds native task presentation
+with an injected catalog and theme. See `docs/ui-design.md` for presentation decisions.
 
 - Preserve column names/order configuration, sparse metadata-first workbook layout,
   task counterbalancing, loss block distributions and burst probabilities.

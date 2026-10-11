@@ -54,6 +54,7 @@
     "igt_gain_amount": "+{amount:.2f} دلار",
     "igt_loss_amount": "−{amount:.2f} دلار",
     "igt_balance_value": "موجودی: {amount:.2f} دلار",
-    "igt_progress": "انتخاب {number} از {trials}"
+    "igt_progress": "انتخاب {number} از {trials}",
+    "igt_result": "نتیجهٔ انتخاب شما"
   }
 }
