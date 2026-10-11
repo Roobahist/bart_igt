@@ -4,8 +4,39 @@
   "psychopy": "2026.2.4",
   "python": "3.11.17",
   "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
-  "source_commit": "965ca748f4b08c7210870e9e927be21cf068a896",
-  "workflow_run": "38172580303",
+  "source_commit": "f3cdeb05a9d5c7367611f5a209abc861f128168a",
+  "workflow_run": "38173537112",
+  "presentation": {
+    "font": "Plus Jakarta Sans",
+    "font_files": [
+      "fonts/PlusJakartaSans/PlusJakartaSans-Regular.ttf",
+      "fonts/PlusJakartaSans/PlusJakartaSans-Bold.ttf"
+    ],
+    "theme": {
+      "canvas": "#F5F7FC",
+      "surface": "#FFFFFF",
+      "deck": "#4960CF",
+      "border": "#9AA8C4",
+      "ink": "#1B2640",
+      "muted": "#566585",
+      "accent": "#4960CF",
+      "gain": "#17734E",
+      "loss": "#B13F4A",
+      "on_deck": "#F2F4FF",
+      "pattern": "#BBC6FF",
+      "edge": "#D6DDF0",
+      "balloon": "#ED735D",
+      "balloon_edge": "#C65B49",
+      "balloon_light": "#FFE7DD"
+    },
+    "balloon_geometry": {
+      "min_width": 0.12,
+      "max_width": 0.42,
+      "min_height": 0.23,
+      "max_height": 0.8,
+      "center_y": 0.0
+    }
+  },
   "capture_method": "Window.getMovieFrame(back) before actual Window.flip",
   "screenshots": [
     "sam-survey",
@@ -49,7 +80,7 @@
       "choice": 1,
       "gain": 1,
       "loss": 2,
-      "RT": 0.056342102000002114
+      "RT": 0.04735081700000876
     },
     {
       "section": "IGT",
@@ -57,7 +88,7 @@
       "choice": 1,
       "gain": 1,
       "loss": 3,
-      "RT": 0.018112127999998506
+      "RT": 0.016217503999996552
     },
     {
       "section": "IGT",
@@ -65,7 +96,7 @@
       "choice": 1,
       "gain": 1,
       "loss": 3.5,
-      "RT": 0.01765546400000062
+      "RT": 0.01674243600000125
     },
     {
       "section": "IGT",
@@ -73,7 +104,7 @@
       "choice": 1,
       "gain": 1,
       "loss": 2.5,
-      "RT": 0.017456722999995122
+      "RT": 0.01689378899999383
     },
     {
       "section": "IGT",
@@ -81,7 +112,7 @@
       "choice": 1,
       "gain": 1,
       "loss": 1.5,
-      "RT": 0.016995260000001622
+      "RT": 0.016641667000001803
     },
     {
       "section": "BART",
@@ -89,7 +120,7 @@
       "pumps": 20,
       "gain": 1.0,
       "explosion": 0,
-      "RT": 0.21535263799999882
+      "RT": 0.19847132999998962
     },
     {
       "section": "BART",
@@ -97,7 +128,7 @@
       "pumps": 127,
       "gain": 6.3500000000000005,
       "explosion": 0,
-      "RT": 1.2397543989999917
+      "RT": 1.1471420710000046
     }
   ]
 }

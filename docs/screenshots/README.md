@@ -12,12 +12,13 @@ VLC video playback or the participant dialog. Video content was not captured.
 The SAM demonstration selects 5 on both scales. The IGT chooses deck 1 for five
 trials with seeded randomness. BART collects one balloon after twenty pumps and a separate seeded
 demonstration after 127 pumps, with audio muted. Neither uses forced outcomes. Exact runtime/source details are in [provenance.json](provenance.json).
-The [successful hosted run](https://github.com/Roobahist/bart_igt/actions/runs/38172580303)
+The [successful hosted run](https://github.com/Roobahist/bart_igt/actions/runs/38173537112)
 used PsychoPy 2026.2.4 and Python 3.11.17.
 
-The task redesign uses printed deck backs and a light selected card containing
-gain/loss labels and amounts. BART uses a native vector balloon, a separate reward
-ledger and keyboard legends. Balloon artwork, position and visual growth range
+The modern game presentation uses matching blue deck backs, white selected cards
+with gain/loss feedback, and bundled Plus Jakarta Sans. BART uses a native vector
+balloon on an uninterrupted field, with all status and plain keyboard legends to
+the side. No divider, floor shadow, frame or capacity gauge surrounds its growth. Balloon artwork, position and visual growth range
 have changed; task probabilities and rewards are retained. See
 [the design decisions](../ui-design.md) for rationale and protocol implications.
 
