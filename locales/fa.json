@@ -60,7 +60,8 @@
     "bart_bank_label": "ذخیره شده",
     "bart_pump": "باد کردن",
     "bart_collect": "ذخیره کردن",
-    "bart_progress": "بادکنک {number} از {trials}"
+    "bart_progress": "بادکنک {number} از {trials}",
+    "bart_control": "{control_key}  {action}"
   },
-  "display_font": "IRANSans"
+  "display_font": null
 }

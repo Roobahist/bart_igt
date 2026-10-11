@@ -163,6 +163,7 @@ class OrchestrationTests(unittest.TestCase):
                 },
             ),
             patch.object(main, "prepare_config"),
+            patch.object(main, "register_catalog_fonts"),
             patch.object(main.cfg, "output_directory", "unused"),
             patch.object(main, "SessionResults", return_value=results) as factory,
             patch.object(main, "survey") as survey,

@@ -1,5 +1,5 @@
 {
-  "font": "Arial",
+  "font": "Plus Jakarta Sans",
   "language_style": "LTR",
   "rating_image_pattern": null,
   "rating_colors": {
@@ -60,7 +60,12 @@
     "bart_bank_label": "Banked",
     "bart_pump": "Pump",
     "bart_collect": "Collect",
-    "bart_progress": "Balloon {number} of {trials}"
+    "bart_progress": "Balloon {number} of {trials}",
+    "bart_control": "{control_key}  {action}"
   },
-  "display_font": "Georgia"
+  "display_font": null,
+  "font_files": [
+    "fonts/PlusJakartaSans/PlusJakartaSans-Regular.ttf",
+    "fonts/PlusJakartaSans/PlusJakartaSans-Bold.ttf"
+  ]
 }

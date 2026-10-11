@@ -7,7 +7,7 @@ import config as cfg
 from igt import gain_loss, reset_decks
 from bart import burst_or_not
 from session import SessionResults, task_order, prepare_config
-from localization import load_catalog
+from localization import load_catalog, register_catalog_fonts
 from ui import IgtScreen, BartScreen
 
 PARTICIPANT_FIELDS = ("subjectName", "subjectCode", "gender", "age", "handedness")
@@ -485,6 +485,7 @@ def run(*, catalog=None):
 
     catalog = load_catalog(cfg.language) if catalog is None else catalog
     catalog.validate()
+    register_catalog_fonts(catalog)
     prepare_config(cfg, needs_number_images=catalog.rating_image_pattern is not None)
     input_gui = gui.Dlg(title=catalog.text("app_title"))
     for field in PARTICIPANT_FIELDS:

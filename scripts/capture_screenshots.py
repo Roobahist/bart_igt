@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 import main  # noqa: E402
-from localization import load_catalog  # noqa: E402
+from localization import load_catalog, register_catalog_fonts  # noqa: E402
 from session import prepare_config  # noqa: E402
 
 
@@ -48,6 +48,7 @@ def capture(directory):
     from psychopy import core, visual
 
     catalog = load_catalog("en")
+    register_catalog_fonts(catalog)
     prepare_config(main.cfg, needs_number_images=False)
     directory.mkdir(parents=True, exist_ok=True)
     window = visual.Window(

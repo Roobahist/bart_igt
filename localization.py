@@ -20,6 +20,7 @@ class LanguageCatalog:
     rating_image_pattern: str | None
     rating_colors: Mapping[str, list[float]]
     display_font: str | None = None
+    font_files: tuple[str, ...] = ()
 
     def text(self, key: str, **values) -> str:
         """Render a message using live study values, rather than baked-in counts."""
@@ -92,8 +93,25 @@ def load_catalog(language: str, *, directory: Path = LOCALES_DIRECTORY) -> Langu
     display_font = data.get("display_font")
     if display_font is not None and (not isinstance(display_font, str) or not display_font):
         raise ValueError("display_font must be a nonempty string or null")
+    files = data.get("font_files", [])
+    if not isinstance(files, list) or not all(isinstance(path, str) and path for path in files):
+        raise ValueError("font_files must be a list of nonempty paths")
     catalog = LanguageCatalog(
-        messages, data["font"], data["language_style"], pattern, colors, display_font
+        messages, data["font"], data["language_style"], pattern, colors, display_font, tuple(files)
     )
     catalog.validate()
     return catalog
+
+
+def register_catalog_fonts(catalog):
+    """Register bundled faces in this process only, without OS font installation."""
+    if not catalog.font_files:
+        return
+    paths = [LOCALES_DIRECTORY.parent / path for path in catalog.font_files]
+    missing = [str(path) for path in paths if not path.is_file()]
+    if missing:
+        raise FileNotFoundError("Missing catalog font files: " + ", ".join(missing))
+    from pyglet import font
+
+    for path in paths:
+        font.add_file(str(path))

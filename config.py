@@ -54,21 +54,21 @@ else:
 
 # Shared native task presentation. Hex colors are converted to PsychoPy RGB by ui.py.
 ui_theme = {
-    "canvas": "#F4F0E8",
-    "surface": "#FFFCF5",
-    "deck": "#31454E",
-    "border": "#867D71",
-    "ink": "#263731",
-    "muted": "#61675E",
-    "accent": "#31454E",
-    "gain": "#216146",
-    "loss": "#9C4935",
-    "on_deck": "#EFE5D0",
-    "pattern": "#A9B9B8",
-    "shadow": "#DDD6CA",
-    "balloon": "#BC6349",
-    "balloon_edge": "#934932",
-    "balloon_light": "#F4C1A5",
+    "canvas": "#F5F7FC",
+    "surface": "#FFFFFF",
+    "deck": "#4960CF",
+    "border": "#9AA8C4",
+    "ink": "#1B2640",
+    "muted": "#566585",
+    "accent": "#4960CF",
+    "gain": "#17734E",
+    "loss": "#B13F4A",
+    "on_deck": "#F2F4FF",
+    "pattern": "#BBC6FF",
+    "edge": "#D6DDF0",
+    "balloon": "#ED735D",
+    "balloon_edge": "#C65B49",
+    "balloon_light": "#FFE7DD",
 }
 # Visual dimensions are fractions of the task viewport, independent of burst rules.
 bart_presentation = {
