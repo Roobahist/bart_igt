@@ -30,8 +30,10 @@ class BartFlowTests(unittest.TestCase):
             patch.multiple(
                 main,
                 create=True,
-                visual=SimpleNamespace(TextStim=Stimulus, ImageStim=Stimulus),
-                win=SimpleNamespace(flip=lambda: None),
+                visual=SimpleNamespace(
+                    TextStim=Stimulus, ImageStim=Stimulus, Rect=Stimulus, ShapeStim=Stimulus
+                ),
+                win=SimpleNamespace(flip=lambda: None, size=(1200, 675)),
                 core=SimpleNamespace(wait=lambda _: None),
                 keys=SimpleNamespace(getState=lambda key: state.get(key, False)),
                 results=SimpleNamespace(append=rows.append),
@@ -161,6 +163,7 @@ class OrchestrationTests(unittest.TestCase):
                 },
             ),
             patch.object(main, "prepare_config"),
+            patch.object(main, "register_catalog_fonts"),
             patch.object(main.cfg, "output_directory", "unused"),
             patch.object(main, "SessionResults", return_value=results) as factory,
             patch.object(main, "survey") as survey,
@@ -267,19 +270,24 @@ class OrchestrationTests(unittest.TestCase):
 
 
 class IgtFlowTests(unittest.TestCase):
-    def run_click(self, catalog):
+    def run_click(self, catalog, *, deck=1, outcome=(1, 0.5), outside_first=False):
         from unittest.mock import Mock
 
         rows = []
         mouse = SimpleNamespace(
-            getPressed=Mock(side_effect=[(1, 0, 0), (0, 0, 0)]), isPressedIn=Mock(return_value=True)
+            getPressed=Mock(side_effect=[(1, 0, 0), (0, 0, 0)] * (2 if outside_first else 1)),
+            isPressedIn=Mock(
+                side_effect=([False] * 4 if outside_first else []) + [False] * (deck - 1) + [True]
+            ),
         )
         with (
             patch.multiple(
                 main,
                 create=True,
-                visual=SimpleNamespace(TextStim=Stimulus, ImageStim=Stimulus, Rect=Stimulus),
-                win=SimpleNamespace(flip=lambda: None),
+                visual=SimpleNamespace(
+                    TextStim=Stimulus, ImageStim=Stimulus, Rect=Stimulus, ShapeStim=Stimulus
+                ),
+                win=SimpleNamespace(flip=lambda: None, size=(1200, 675)),
                 core=SimpleNamespace(wait=lambda _: None),
                 keys=SimpleNamespace(getState=lambda _: False),
                 results=SimpleNamespace(append=rows.append),
@@ -293,18 +301,26 @@ class IgtFlowTests(unittest.TestCase):
             ),
             patch.multiple(main.cfg, igt_total_number_of_trials=1, igt_sleep_time=0),
             patch.object(main, "wait_for_advance"),
-            patch.object(main, "gain_loss", return_value=(1, 0.5)) as draw,
+            patch.object(main, "gain_loss", return_value=outcome) as draw,
         ):
             main.igt_experiment(catalog)
-            self.assertAlmostEqual(main.total_liquidity, 0.5)
-        draw.assert_called_once_with(1)
+            self.assertAlmostEqual(main.total_liquidity, outcome[0] - outcome[1])
+        draw.assert_called_once_with(deck)
         self.assertEqual(len(rows), 1)
-        self.assertEqual(rows[0]["choice"], 1)
-        self.assertEqual(rows[0]["gain"], 1)
-        self.assertEqual(rows[0]["loss"], 0.5)
+        self.assertEqual(rows[0]["choice"], deck)
+        self.assertEqual(rows[0]["gain"], outcome[0])
+        self.assertEqual(rows[0]["loss"], outcome[1])
         self.assertGreaterEqual(rows[0]["RT"], 0)
 
     def test_one_click_records_one_choice_and_updates_net_reward(self):
         for language in ("fa", "en"):
             with self.subTest(language=language):
                 self.run_click(load_catalog(language))
+
+    def test_outside_click_does_not_consume_an_outcome_or_record_a_trial(self):
+        self.run_click(load_catalog("en"), deck=3, outside_first=True)
+
+    def test_all_decks_and_zero_or_negative_net_outcomes_keep_original_values(self):
+        for deck, outcome in ((1, (1, 0)), (2, (1, 12.5)), (3, (0.5, 0.5)), (4, (0.5, 0))):
+            with self.subTest(deck=deck):
+                self.run_click(load_catalog("en"), deck=deck, outcome=outcome)

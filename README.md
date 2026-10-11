@@ -8,11 +8,30 @@ Analogue Risk Task (BART). Results are written locally to Excel.
 This is research software: review the study settings and validate the actual
 workstation before collecting participant data. Defaults are five trials per task.
 
+## English screenshots
+
+Real PsychoPy-rendered English interface frames, captured on a disposable
+GitHub-hosted runner with scripted demonstration input. No participant data or
+local PsychoPy installation was used. These demonstrate presentation, not
+hardware timing, audio, video playback or a complete participant session.
+
+![English SAM survey](docs/screenshots/sam-selected.png)
+
+![English IGT card selection](docs/screenshots/igt-choice.png)
+
+![English IGT selected card outcome](docs/screenshots/igt-feedback.png)
+
+![English BART balloon play](docs/screenshots/bart-balloon.png)
+
+See the [full screenshot gallery and capture details](docs/screenshots/README.md)
+and the [task design decisions](docs/ui-design.md).
+
 ## Setup and running
 
 Use PsychoPy Standalone **2026.2.4**, or a desktop Python **3.11/3.12** environment
 with PsychoPy installed. Install VLC of the same architecture as your Python
-runtime, and install the supplied IRANSans fonts for Persian rendering. English uses Arial. Check the
+runtime, and install the supplied IRANSans fonts for Persian rendering. English uses bundled Plus Jakarta Sans, loaded within the process without OS
+font installation. Check the
 rights to the fonts and other supplied media before redistributing them.
 
 ```sh
@@ -40,6 +59,8 @@ Paths are resolved against the repository, so launching from another directory
 works. Absolute paths are also accepted.
 
 - `language`: `"fa"` (default Persian) or `"en"` (English), selecting a JSON catalog.
+- `ui_theme`: shared task surfaces, printed card details, text, balloon and outcome colors.
+- `bart_presentation`: viewport-relative balloon dimensions and center position.
 - `controls`: PsychoPy key names for advance, pump, collect, skip, replay, pause and abort;
   instructions display the configured keys.
 - `which_video`: 1 negative, 2 positive, 3 neutral.
@@ -77,9 +98,9 @@ run(catalog=load_catalog("en"))
 
 `run()` passes this same catalog to IGT, BART and both surveys. Participant-facing
 strings live in `locales/en.json` and `locales/fa.json`; fonts, script direction,
-numeral rendering and rating button colors are also catalog data. English uses
-Latin 1–9 text buttons; Persian keeps the original numeral images. IGT label/value
-positions follow the catalog's reading direction. Media are shared; choosing English
+numeral rendering, optional display font, font asset paths and rating button colors
+are also catalog data. English uses
+Latin 1–9 text buttons; Persian keeps the original numeral images. IGT header positions follow the catalog's reading direction. Media are shared; choosing English
 does not translate subtitles or speech embedded in video assets.
 
 Edit a catalog to change wording, or load one from a separate directory with
@@ -136,7 +157,7 @@ python -m pip install -r requirements-dev.txt
 ruff check .
 ruff format --check .
 python -m unittest discover -s tests -v
-python -m compileall -q main.py bart.py igt.py config.py session.py localization.py
+python -m compileall -q main.py bart.py igt.py config.py session.py localization.py ui.py
 pip-audit --strict --no-deps --disable-pip -r requirements-results.txt
 ```
 
@@ -152,6 +173,7 @@ interactive desktop experiment.
 ## Architecture and limitations
 
 - `main.py`: participant dialog, presentation, input and session orchestration.
+- `ui.py`: native task screens, modern card stacks, an open balloon field, instruction layout and injected theme.
 - `igt.py`, `bart.py`: task randomization, independently testable without PsychoPy.
 - `session.py`: counterbalancing, setting/asset validation, journaling and export.
 - `config.py`: study parameters, language, controls and media paths.

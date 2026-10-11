@@ -1,5 +1,5 @@
 {
-  "font": "Arial",
+  "font": "Plus Jakarta Sans",
   "language_style": "LTR",
   "rating_image_pattern": null,
   "rating_colors": {
@@ -44,6 +44,28 @@
     "fixation": "+",
     "igt_instructions": "This task examines how you make decisions.\nYou will see four decks. Each choice can result in a gain and a loss.\nYou start with an initial balance. Try to earn as much as possible.\nMake one choice per trial. There are {trials} choices in this task.\nYour gains and losses will be shown after each choice.\n\nPlease respond carefully. A percentage of your total winnings will be paid to you at the end of the experiment.\n\nWhen you are ready, press {advance_key} to start.",
     "bart_instructions": "This task examines how you make decisions.\nTry to earn as much as possible by inflating balloons.\nEach pump adds money to the current balloon. If the balloon bursts, you earn nothing from that balloon.\nBalloons have different burst points. Some can grow nearly as large as the screen; most burst earlier.\n\nPress {pump_key} to pump. Press {collect_key} before the balloon bursts to transfer its value to your bank and move to the next balloon.\nThe balloon value shows the current reward; the bank shows money collected across the task.\n\nPlease respond carefully. A percentage of the money in your bank will be paid to you at the end of the experiment.\n\nWhen you are ready, press {advance_key} to start.",
-    "survey_instructions": "Please describe how you feel right now using the two scales below.\nThe first scale asks how calm or aroused you feel.\nThe second asks how unpleasant or pleasant you feel.\nRate each from 1 to 9 by clicking a number."
-  }
+    "survey_instructions": "Please describe how you feel right now using the two scales below.\nThe first scale asks how calm or aroused you feel.\nThe second asks how unpleasant or pleasant you feel.\nRate each from 1 to 9 by clicking a number.",
+    "igt_title": "Iowa Gambling Task",
+    "bart_title": "Balloon Task",
+    "igt_choose": "Choose a deck",
+    "igt_pick": "Click to choose",
+    "igt_gain_label": "Gain",
+    "igt_loss_label": "Loss",
+    "igt_gain_amount": "+${amount:.2f}",
+    "igt_loss_amount": "−${amount:.2f}",
+    "igt_balance_value": "Balance  ${amount:.2f}",
+    "igt_progress": "Choice {number} of {trials}",
+    "igt_result": "Your result",
+    "bart_value_label": "This balloon",
+    "bart_bank_label": "Banked",
+    "bart_pump": "Pump",
+    "bart_collect": "Collect",
+    "bart_progress": "Balloon {number} of {trials}",
+    "bart_control": "{control_key}  {action}"
+  },
+  "display_font": null,
+  "font_files": [
+    "fonts/PlusJakartaSans/PlusJakartaSans-Regular.ttf",
+    "fonts/PlusJakartaSans/PlusJakartaSans-Bold.ttf"
+  ]
 }

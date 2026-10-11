@@ -52,6 +52,33 @@ elif which_video == 3:
 else:
     raise ValueError("which_video must be 1, 2, or 3")
 
+# Shared native task presentation. Hex colors are converted to PsychoPy RGB by ui.py.
+ui_theme = {
+    "canvas": "#F5F7FC",
+    "surface": "#FFFFFF",
+    "deck": "#4960CF",
+    "border": "#9AA8C4",
+    "ink": "#1B2640",
+    "muted": "#566585",
+    "accent": "#4960CF",
+    "gain": "#17734E",
+    "loss": "#B13F4A",
+    "on_deck": "#F2F4FF",
+    "pattern": "#BBC6FF",
+    "edge": "#D6DDF0",
+    "balloon": "#ED735D",
+    "balloon_edge": "#C65B49",
+    "balloon_light": "#FFE7DD",
+}
+# Visual dimensions are fractions of the task viewport, independent of burst rules.
+bart_presentation = {
+    "min_width": 0.12,
+    "max_width": 0.42,
+    "min_height": 0.23,
+    "max_height": 0.80,
+    "center_y": 0.0,
+}
+
 # IGT
 igt_skip = 0  # set to 1 if you dont want IGT experiment to show up
 igt_deck1_all_losses = [0, 0, 0, 0, 0, 1.5, 2, 2.5, 3, 3.5]
@@ -67,8 +94,6 @@ igt_total_number_of_trials = 5
 igt_bg_color = [1, 1, 1]  # RGB value in normalized form for White color
 igt_font_color = [-1, -1, -1]  # RGB value in normalized form for Black color
 igt_sleep_time = 2  # gain and loss will appear on screen for this long
-igt_card_back_path = "images/IGT/back1.png"
-igt_card_front_path = "images/IGT/front1.png"
 
 # BART
 bart_skip = 0  # set to 1 if you dont want BART experiment to show up

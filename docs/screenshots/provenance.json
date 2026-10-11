@@ -1,0 +1,134 @@
+{
+  "description": "Real PsychoPy OpenGL frames, automated demonstration input; no participant session",
+  "language": "en",
+  "psychopy": "2026.2.4",
+  "python": "3.11.17",
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "source_commit": "f3cdeb05a9d5c7367611f5a209abc861f128168a",
+  "workflow_run": "38173537112",
+  "presentation": {
+    "font": "Plus Jakarta Sans",
+    "font_files": [
+      "fonts/PlusJakartaSans/PlusJakartaSans-Regular.ttf",
+      "fonts/PlusJakartaSans/PlusJakartaSans-Bold.ttf"
+    ],
+    "theme": {
+      "canvas": "#F5F7FC",
+      "surface": "#FFFFFF",
+      "deck": "#4960CF",
+      "border": "#9AA8C4",
+      "ink": "#1B2640",
+      "muted": "#566585",
+      "accent": "#4960CF",
+      "gain": "#17734E",
+      "loss": "#B13F4A",
+      "on_deck": "#F2F4FF",
+      "pattern": "#BBC6FF",
+      "edge": "#D6DDF0",
+      "balloon": "#ED735D",
+      "balloon_edge": "#C65B49",
+      "balloon_light": "#FFE7DD"
+    },
+    "balloon_geometry": {
+      "min_width": 0.12,
+      "max_width": 0.42,
+      "min_height": 0.23,
+      "max_height": 0.8,
+      "center_y": 0.0
+    }
+  },
+  "capture_method": "Window.getMovieFrame(back) before actual Window.flip",
+  "screenshots": [
+    "sam-survey",
+    "sam-selected",
+    "igt-instructions",
+    "igt-choice",
+    "igt-feedback",
+    "bart-instructions",
+    "bart-start",
+    "bart-balloon",
+    "bart-large-balloon"
+  ],
+  "demo_settings": {
+    "igt_trials": 5,
+    "bart_trials": 1,
+    "additional_bart_demo": {
+      "pumps": 127,
+      "seed": 219
+    },
+    "bart_pumps": 20,
+    "seed": 1,
+    "sound": false,
+    "igt_feedback_wait": 0
+  },
+  "not_verified": [
+    "physical input",
+    "hardware timing",
+    "audio",
+    "VLC video",
+    "participant dialog"
+  ],
+  "synthetic_responses": [
+    {
+      "arousal": 5,
+      "pleasure": 5,
+      "section": "before video"
+    },
+    {
+      "section": "IGT",
+      "trial": 1,
+      "choice": 1,
+      "gain": 1,
+      "loss": 2,
+      "RT": 0.04735081700000876
+    },
+    {
+      "section": "IGT",
+      "trial": 2,
+      "choice": 1,
+      "gain": 1,
+      "loss": 3,
+      "RT": 0.016217503999996552
+    },
+    {
+      "section": "IGT",
+      "trial": 3,
+      "choice": 1,
+      "gain": 1,
+      "loss": 3.5,
+      "RT": 0.01674243600000125
+    },
+    {
+      "section": "IGT",
+      "trial": 4,
+      "choice": 1,
+      "gain": 1,
+      "loss": 2.5,
+      "RT": 0.01689378899999383
+    },
+    {
+      "section": "IGT",
+      "trial": 5,
+      "choice": 1,
+      "gain": 1,
+      "loss": 1.5,
+      "RT": 0.016641667000001803
+    },
+    {
+      "section": "BART",
+      "trial": 1,
+      "pumps": 20,
+      "gain": 1.0,
+      "explosion": 0,
+      "RT": 0.19847132999998962
+    },
+    {
+      "section": "BART",
+      "trial": 1,
+      "pumps": 127,
+      "gain": 6.3500000000000005,
+      "explosion": 0,
+      "RT": 1.1471420710000046
+    }
+  ]
+}

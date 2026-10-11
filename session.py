@@ -81,10 +81,7 @@ def prepare_config(cfg, *, needs_number_images=True):
     if not needs_number_images:
         required = [name for name in required if not name.startswith("number")]
     required.append("video_path")
-    if not cfg.igt_skip:
-        required += ["igt_card_back_path", "igt_card_front_path"]
     if not cfg.bart_skip:
-        required += ["bart_rope_path", "bart_balloon_path"]
         for name in ("blow", "burst", "collect"):
             if getattr(cfg, f"bart_{name}_sound"):
                 required.append(f"bart_{name}_path")

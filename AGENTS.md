@@ -4,10 +4,13 @@ This is a Persian/English PsychoPy desktop research experiment, not a web applic
 `main.py` orchestrates SAM → video → SAM → counterbalanced IGT/BART → payout screen.
 `igt.py` and `bart.py` preserve study randomization; `session.py` owns local result
 storage and configuration validation. `localization.py` loads JSON catalogs from `locales/`. Assets and study settings live in the
-existing directories and `config.py`. `main.py` is the single application entry point.
+existing directories and `config.py`. `main.py` is the single application entry point. `ui.py` holds native task presentation
+with an injected catalog and theme. See `docs/ui-design.md` for presentation decisions.
 
 - Preserve column names/order configuration, sparse metadata-first workbook layout,
   task counterbalancing, loss block distributions and burst probabilities.
+- Do not introduce BART lines, frames, floor shadows, scales or gauges that imply
+  a balloon size limit or recommend a collection threshold. Keep status to the side.
 - Do not change scientific defaults, instructions or timing without documenting the
   effect and requiring manual workstation validation before data collection.
 - Keep participant-facing text/fonts/script settings in locale catalogs and inject
@@ -31,3 +34,9 @@ Desktop compatibility and timing require the checklist in `docs/workstation-chec
 
 If giving the user directly reusable content with placeholders, put a bold notice
 at the top that the placeholders need correct values before use.
+
+English screenshots in `docs/screenshots/` are genuine PsychoPy frames captured
+remotely with scripted demonstration input. Use the hosted **English screenshots**
+workflow to regenerate them; never install PsychoPy on the owner's machine without
+explicit authorization. Keep provenance and limits with the images; do not present
+scripted captures as physical timing, audio/video or participant-session validation.
