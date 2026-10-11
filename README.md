@@ -30,17 +30,47 @@ collecting participant data; the redesign is a new presentation version.
 ## Actual browser screenshots
 
 Captured from the running application with scripted synthetic input, using the
-existing Chrome browser without installing experiment software.
+existing Chrome browser without installing experiment software. These are actual
+browser renders, not mockups or participant data.
 
-![Browser IGT selection](docs/screenshots/browser/english-igt-choice.png)
+### Session setup and instructions
 
-![Browser IGT selected card](docs/screenshots/browser/english-igt-reveal.png)
+![English session setup with padded dropdown arrows](docs/screenshots/browser/english-setup.png)
 
-![Browser BART](docs/screenshots/browser/english-bart-pumped.png)
+![Structured English balloon task instructions](docs/screenshots/browser/english-bart-instructions.png)
 
-[Full browser gallery and provenance](docs/screenshots/browser/README.md).
-[Earlier native PsychoPy captures](docs/screenshots/README.md) are retained as
-historical desktop evidence, not screenshots of the browser application.
+### Ratings and card choices
+
+![English SAM ratings](docs/screenshots/browser/english-survey.png)
+
+![English IGT deck selection](docs/screenshots/browser/english-igt-choice.png)
+
+![English IGT selected card with a light result face](docs/screenshots/browser/english-igt-reveal.png)
+
+### Balloon inflation
+
+Only the balloon body grows upward. Its bottom attachment, knot and rope stay
+fixed. The examples below show zero and twenty pumps at the same viewport size.
+They use a documented no-burst test fixture to make the geometry comparison
+repeatable; they are not naturally sampled participant outcomes.
+
+<img src="docs/screenshots/browser/english-bart-start.png" alt="Balloon before inflation: fixed knot and rope" width="49%"> <img src="docs/screenshots/browser/english-bart-pumped.png" alt="Balloon after twenty pumps: body grows upward with the same knot and rope" width="49%">
+
+<details>
+<summary>Large balloon, Persian phone layout, and completion screen</summary>
+
+![127-pump balloon geometry fixture](docs/screenshots/browser/english-bart-large.png)
+
+<img src="docs/screenshots/browser/persian-bart-instructions-mobile.png" alt="Structured Persian instructions on a phone" width="320"> <img src="docs/screenshots/browser/persian-bart-mobile.png" alt="Persian balloon task on a phone" width="320">
+
+![English completion screen with local result downloads](docs/screenshots/browser/english-completion.png)
+
+</details>
+
+[Full browser gallery and capture provenance](docs/screenshots/browser/README.md).
+The captures demonstrate presentation and scripted flow, not physical timing or
+behavioral equivalence. [Earlier native PsychoPy captures](docs/screenshots/README.md)
+are retained as historical desktop evidence.
 
 ## Optional PsychoPy desktop version
 
