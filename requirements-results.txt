@@ -1,0 +1,3 @@
+# Headless tests and journal recovery; PsychoPy is not required.
+openpyxl==3.1.5
+et-xmlfile==2.0.0

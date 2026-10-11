@@ -1,0 +1,49 @@
+{
+  "font": "Arial",
+  "language_style": "LTR",
+  "rating_image_pattern": null,
+  "rating_colors": {
+    "unselected": [
+      1,
+      1,
+      1
+    ],
+    "selected": [
+      -0.88,
+      0.35,
+      0.69
+    ]
+  },
+  "messages": {
+    "app_title": "BART / IGT",
+    "field.subjectName": "Participant name",
+    "field.subjectCode": "Participant code",
+    "field.gender": "Gender",
+    "field.age": "Age",
+    "field.handedness": "Dominant hand",
+    "choice.Male": "Male",
+    "choice.Female": "Female",
+    "choice.Other": "Other",
+    "choice.Right": "Right",
+    "choice.Left": "Left",
+    "deck": "Deck {number}",
+    "igt_trial": "Choice:",
+    "igt_balance": "Balance:",
+    "igt_amount": "${amount:.2f}",
+    "igt_gain": "You won ${amount}.",
+    "igt_loss": "You also lost ${amount}.",
+    "balloon_value": "Balloon value: ${amount:.2f}",
+    "balloon_trial": "Balloon: {number:02d}",
+    "bank_balance": "Bank balance: ${amount:.2f}",
+    "continue": "Press {advance_key} to continue.",
+    "arousal_low": "Calm",
+    "arousal_high": "Aroused",
+    "pleasure_high": "Very pleasant",
+    "pleasure_low": "Very unpleasant",
+    "completion": "You won ${amount:.2f}.\nYou won {toman} toman.\n\nThank you for participating.\n\nPress {advance_key} to finish.",
+    "fixation": "+",
+    "igt_instructions": "This task examines how you make decisions.\nYou will see four decks. Each choice can result in a gain and a loss.\nYou start with an initial balance. Try to earn as much as possible.\nMake one choice per trial. There are {trials} choices in this task.\nYour gains and losses will be shown after each choice.\n\nPlease respond carefully. A percentage of your total winnings will be paid to you at the end of the experiment.\n\nWhen you are ready, press {advance_key} to start.",
+    "bart_instructions": "This task examines how you make decisions.\nTry to earn as much as possible by inflating balloons.\nEach pump adds money to the current balloon. If the balloon bursts, you earn nothing from that balloon.\nBalloons have different burst points. Some can grow nearly as large as the screen; most burst earlier.\n\nPress {pump_key} to pump. Press {collect_key} before the balloon bursts to transfer its value to your bank and move to the next balloon.\nThe balloon value shows the current reward; the bank shows money collected across the task.\n\nPlease respond carefully. A percentage of the money in your bank will be paid to you at the end of the experiment.\n\nWhen you are ready, press {advance_key} to start.",
+    "survey_instructions": "Please describe how you feel right now using the two scales below.\nThe first scale asks how calm or aroused you feel.\nThe second asks how unpleasant or pleasant you feel.\nRate each from 1 to 9 by clicking a number."
+  }
+}

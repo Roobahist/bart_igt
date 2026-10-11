@@ -1,62 +1,35 @@
+"""Four IGT decks with independently shuffled, replenished loss blocks."""
+
 import random
-from config import *
+import config
 
-deck1_number = 0
-deck2_number = 0
-deck3_number = 0
-deck4_number = 0
-
-deck1_temp_losses = []
-deck2_temp_losses = []
-deck3_temp_losses = []
-deck4_temp_losses = []
-
-def gain_loss(decknumber):
-    global deck1_number, deck2_number, deck3_number, deck4_number, deck1_temp_losses, deck2_temp_losses, deck3_temp_losses, deck4_temp_losses
-    
-    if decknumber == 1:
-        gain = igt_deck1_gain
-        
-        if deck1_number % len(igt_deck1_all_losses) == 0:
-            deck1_temp_losses = random.sample(igt_deck1_all_losses,len(igt_deck1_all_losses))
-        loss = deck1_temp_losses.pop()
-        
-        deck1_number += 1
+_remaining_losses = {deck: [] for deck in range(1, 5)}
 
 
-    elif decknumber == 2:
-        gain = igt_deck2_gain
-        
-        if deck2_number % len(igt_deck2_all_losses) == 0:
-            deck2_temp_losses = random.sample(igt_deck2_all_losses,len(igt_deck2_all_losses))
-        loss = deck2_temp_losses.pop()
-        
-        deck2_number += 1
-        
-        
-    elif decknumber == 3:
-        gain = igt_deck3_gain
-        
-        if deck3_number % len(igt_deck3_all_losses) == 0:
-            deck3_temp_losses = random.sample(igt_deck3_all_losses,len(igt_deck3_all_losses))
-        loss = deck3_temp_losses.pop()
-        
-        deck3_number += 1
-        
-        
-    elif decknumber == 4:
-        gain = igt_deck4_gain
-        
-        if deck4_number % len(igt_deck4_all_losses) == 0:
-            deck4_temp_losses = random.sample(igt_deck4_all_losses,len(igt_deck4_all_losses))
-        loss = deck4_temp_losses.pop()
-        
-        deck4_number += 1
-        
-        
-    else:
-        gain = 'there are only 4 decks'
-        loss = 'there are only 4 decks'
-        
-    return gain, loss
-    
+def reset_decks():
+    """Discard partial loss blocks before starting another participant session."""
+    for losses in _remaining_losses.values():
+        losses.clear()
+
+
+def gain_loss(decknumber, *, rng=None):
+    """Return the configured gain and next loss for deck 1–4.
+
+    Each complete block contains exactly the configured losses, in random order.
+    The optional random generator supports reproducible tests without changing
+    the application's default randomness.
+    """
+    if (
+        isinstance(decknumber, bool)
+        or not isinstance(decknumber, int)
+        or decknumber not in _remaining_losses
+    ):
+        raise ValueError("decknumber must be an integer from 1 to 4")
+    losses = _remaining_losses[decknumber]
+    if not losses:
+        configured = getattr(config, f"igt_deck{decknumber}_all_losses")
+        if not configured:
+            raise ValueError("each deck must contain at least one loss")
+        rng = random if rng is None else rng
+        losses.extend(rng.sample(configured, len(configured)))
+    return getattr(config, f"igt_deck{decknumber}_gain"), losses.pop()

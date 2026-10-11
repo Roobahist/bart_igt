@@ -1,253 +1,316 @@
-from psychopy import visual, event, gui, core, constants
-import time, keyboard
-import pandas as pd
-from datetime import datetime
-from config import *
-from igt import gain_loss
+"""Bilingual SAM, IGT and BART desktop experiment. Run with PsychoPy Coder."""
+
+import time
+import logging
+
+import config as cfg
+from igt import gain_loss, reset_decks
 from bart import burst_or_not
-from playsound import playsound
+from session import SessionResults, task_order, prepare_config
+from localization import load_catalog
 
-#input GUI
-
-input_gui = gui.Dlg()
-input_gui.addField('SubjectName')
-input_gui.addField('SubjectCode')
-input_gui.addField('Gender', choices = ['Male', 'Female', 'Other'])
-input_gui.addField('Age')
-input_gui.addField('Handedness', choices = ['Right', 'Left'])
-input_gui.show()
-
-if input_gui.OK == False:
-    core.quit()
-
-#initializing Excel File
-
-data = pd.DataFrame(columns = column_order)
-date_time = datetime.now().strftime("%d-%b-%y  %H-%M-%S")
-file_name = input_gui.data[1] + ' ~ ' + date_time + '.xlsx'
-file_path = 'output/' + file_name
-    
-subjectdata = {
-'subjectName':input_gui.data[0],
-'subjectCode':input_gui.data[1],
-'gender':input_gui.data[2],
-'age':input_gui.data[3],
-'handedness':input_gui.data[4],
-'video':video_name
-}
-
-data = data.append(subjectdata, ignore_index=True)
+PARTICIPANT_FIELDS = ("subjectName", "subjectCode", "gender", "age", "handedness")
+PARTICIPANT_CHOICES = {"gender": ("Male", "Female", "Other"), "handedness": ("Right", "Left")}
 
 
+class ExperimentAborted(Exception):
+    """Operator requested a safe session stop."""
 
-def igt_experiment():
-    global data, w, h, total_liquidity, font_size, distance_from_vertical_edges, distance_from_horizontal_edges, myMouse
-    
-    if not igt_skip:
-        
-        igt_Liquidity = igt_initial_liquidity
-        
-        #Instruction
-        
-        text = visual.TextStim(win=win, 
-                                    text="""شرکت کننده گرامی، آزمون حاضر به عنوان ابزاری برای ارزیابی چهارچوب تصمیم گیری شما استفاده می شود.
-        شما در این آزمون با 4 کارت روبه رو می شوید که انتخاب هر یک از این کارت ها مقادیری از برد و باخت به همراه دارد.
-        در ابتدا شما از یک موجودی برخوردارید که با استفاده از آن موجودی می توانید به بازی بپردازید.
-        شما باید تلاش کنید که با انتخاب های خود به حداکثر سود دست یابید. 
-        توجه داشته باشید که شما در هر مرحله می توانید یک انتخاب داشته باشید. این آزمون شامل 100 انتخاب است.
-        پس از هر انتخاب شما می توانید از میزان برد و باخت خود مطلع شوید.
 
-        توجه: لطفا با دقت پاسخ دهید. درصدی از مبلغ کلی که برنده می شوید، در آخر آزمون به شما نقدا پرداخت خواهد شد.
+def check_abort():
+    if keys.getState(cfg.controls["abort"]):
+        raise ExperimentAborted()
 
-        برای شروع آزمون، هر موقع آماده بودید کلید SPACE را فشار دهید.""", 
 
-                                    color=igt_font_color, 
-                                    languageStyle='Arabic', 
-                                    font='IRANSans',
-                                    height=font_size,
-                                    bold=True,
-                                    wrapWidth=w,
-                                    )
+def wait_for_advance():
+    """Wait for a fresh press, so held instruction keys do not pump balloons."""
+    while keys.getState(cfg.controls["advance"]):
+        check_abort()
+        core.wait(0.001)
+    while not keys.getState(cfg.controls["advance"]):
+        check_abort()
+        core.wait(0.001)
+    while keys.getState(cfg.controls["advance"]):
+        check_abort()
+        core.wait(0.001)
+
+
+def igt_experiment(catalog):
+    global total_liquidity
+
+    if not cfg.igt_skip:
+        igt_Liquidity = cfg.igt_initial_liquidity
+
+        # Instruction
+
+        text = visual.TextStim(
+            win=win,
+            text=catalog.text(
+                "igt_instructions",
+                trials=cfg.igt_total_number_of_trials,
+                advance_key=cfg.controls["advance"].upper(),
+            ),
+            color=cfg.igt_font_color,
+            **catalog.text_options,
+            height=font_size,
+            bold=True,
+            wrapWidth=w,
+        )
         text.draw()
         win.flip()
-        event.waitKeys(keyList=['space'])
+        wait_for_advance()
 
-        #Experiment
+        # Experiment
 
         trial_number = 1
-        
-        card_width = 2*w/13
-        card_height = 1.5*card_width
-        cards_distance = w/13
 
-        card1_img_pos = [-(1.5*card_width + 1.5*cards_distance) , -(h/2-(card_height/2)-distance_from_horizontal_edges)]
-        card2_img_pos = [-(0.5*card_width + 0.5*cards_distance) , -(h/2-(card_height/2)-distance_from_horizontal_edges)]
-        card3_img_pos = [+(0.5*card_width + 0.5*cards_distance) , -(h/2-(card_height/2)-distance_from_horizontal_edges)]
-        card4_img_pos = [+(1.5*card_width + 1.5*cards_distance) , -(h/2-(card_height/2)-distance_from_horizontal_edges)]
+        card_width = 2 * w / 13
+        card_height = 1.5 * card_width
+        cards_distance = w / 13
 
-        card1_img = visual.ImageStim(win, image=igt_card_back_path, size=[card_width, card_height], pos=card1_img_pos)
-        card2_img = visual.ImageStim(win, image=igt_card_back_path, size=[card_width, card_height], pos=card2_img_pos)
-        card3_img = visual.ImageStim(win, image=igt_card_back_path, size=[card_width, card_height], pos=card3_img_pos)
-        card4_img = visual.ImageStim(win, image=igt_card_back_path, size=[card_width, card_height], pos=card4_img_pos)
+        card1_img_pos = [
+            -(1.5 * card_width + 1.5 * cards_distance),
+            -(h / 2 - (card_height / 2) - distance_from_horizontal_edges),
+        ]
+        card2_img_pos = [
+            -(0.5 * card_width + 0.5 * cards_distance),
+            -(h / 2 - (card_height / 2) - distance_from_horizontal_edges),
+        ]
+        card3_img_pos = [
+            +(0.5 * card_width + 0.5 * cards_distance),
+            -(h / 2 - (card_height / 2) - distance_from_horizontal_edges),
+        ]
+        card4_img_pos = [
+            +(1.5 * card_width + 1.5 * cards_distance),
+            -(h / 2 - (card_height / 2) - distance_from_horizontal_edges),
+        ]
 
-        card1_back_img_pos = [-(1.5*card_width + 1.5*cards_distance) , -(h/2-(card_height/2)-distance_from_horizontal_edges)]
-        card2_back_img_pos = [-(0.5*card_width + 0.5*cards_distance) , -(h/2-(card_height/2)-distance_from_horizontal_edges)]
-        card3_back_img_pos = [+(0.5*card_width + 0.5*cards_distance) , -(h/2-(card_height/2)-distance_from_horizontal_edges)]
-        card4_back_img_pos = [+(1.5*card_width + 1.5*cards_distance) , -(h/2-(card_height/2)-distance_from_horizontal_edges)]
+        card1_img = visual.ImageStim(
+            win, image=cfg.igt_card_back_path, size=[card_width, card_height], pos=card1_img_pos
+        )
+        card2_img = visual.ImageStim(
+            win, image=cfg.igt_card_back_path, size=[card_width, card_height], pos=card2_img_pos
+        )
+        card3_img = visual.ImageStim(
+            win, image=cfg.igt_card_back_path, size=[card_width, card_height], pos=card3_img_pos
+        )
+        card4_img = visual.ImageStim(
+            win, image=cfg.igt_card_back_path, size=[card_width, card_height], pos=card4_img_pos
+        )
 
-        card1_back_img = visual.ImageStim(win, image=igt_card_front_path, size=[card_width, card_height], pos=card1_back_img_pos)
-        card2_back_img = visual.ImageStim(win, image=igt_card_front_path, size=[card_width, card_height], pos=card2_back_img_pos)
-        card3_back_img = visual.ImageStim(win, image=igt_card_front_path, size=[card_width, card_height], pos=card3_back_img_pos)
-        card4_back_img = visual.ImageStim(win, image=igt_card_front_path, size=[card_width, card_height], pos=card4_back_img_pos)
+        card1_back_img_pos = [
+            -(1.5 * card_width + 1.5 * cards_distance),
+            -(h / 2 - (card_height / 2) - distance_from_horizontal_edges),
+        ]
+        card2_back_img_pos = [
+            -(0.5 * card_width + 0.5 * cards_distance),
+            -(h / 2 - (card_height / 2) - distance_from_horizontal_edges),
+        ]
+        card3_back_img_pos = [
+            +(0.5 * card_width + 0.5 * cards_distance),
+            -(h / 2 - (card_height / 2) - distance_from_horizontal_edges),
+        ]
+        card4_back_img_pos = [
+            +(1.5 * card_width + 1.5 * cards_distance),
+            -(h / 2 - (card_height / 2) - distance_from_horizontal_edges),
+        ]
 
-        card1_text_pos = [-(1.5*card_width + 1.5*cards_distance) , -(h/2-(distance_from_horizontal_edges/2))]
-        card2_text_pos = [-(0.5*card_width + 0.5*cards_distance) , -(h/2-(distance_from_horizontal_edges/2))]
-        card3_text_pos = [+(0.5*card_width + 0.5*cards_distance) , -(h/2-(distance_from_horizontal_edges/2))]
-        card4_text_pos = [+(1.5*card_width + 1.5*cards_distance) , -(h/2-(distance_from_horizontal_edges/2))]
+        card1_back_img = visual.ImageStim(
+            win,
+            image=cfg.igt_card_front_path,
+            size=[card_width, card_height],
+            pos=card1_back_img_pos,
+        )
+        card2_back_img = visual.ImageStim(
+            win,
+            image=cfg.igt_card_front_path,
+            size=[card_width, card_height],
+            pos=card2_back_img_pos,
+        )
+        card3_back_img = visual.ImageStim(
+            win,
+            image=cfg.igt_card_front_path,
+            size=[card_width, card_height],
+            pos=card3_back_img_pos,
+        )
+        card4_back_img = visual.ImageStim(
+            win,
+            image=cfg.igt_card_front_path,
+            size=[card_width, card_height],
+            pos=card4_back_img_pos,
+        )
 
-        card1_text = visual.TextStim(win=win, 
-                                    text='گروه 1',
-                                    color=igt_font_color, 
-                                    languageStyle='Arabic', 
-                                    font='IRANSans',
-                                    height=font_size,
-                                    bold=True,
-                                    wrapWidth=w,
-                                    pos=card1_text_pos
-                                    )
-        card2_text = visual.TextStim(win=win, 
-                                    text='گروه 2',
-                                    color=igt_font_color, 
-                                    languageStyle='Arabic', 
-                                    font='IRANSans',
-                                    height=font_size,
-                                    bold=True,
-                                    wrapWidth=w,
-                                    pos=card2_text_pos
-                                    )
-        card3_text = visual.TextStim(win=win, 
-                                    text='گروه 3',
-                                    color=igt_font_color, 
-                                    languageStyle='Arabic', 
-                                    font='IRANSans',
-                                    height=font_size,
-                                    bold=True,
-                                    wrapWidth=w,
-                                    pos=card3_text_pos
-                                    )
-        card4_text = visual.TextStim(win=win, 
-                                    text='گروه 4',
-                                    color=igt_font_color, 
-                                    languageStyle='Arabic', 
-                                    font='IRANSans',
-                                    height=font_size,
-                                    bold=True,
-                                    wrapWidth=w,
-                                    pos=card4_text_pos
-                                    )
-                                    
-        trial_text_pos = [-(1*card_width + 1.5*cards_distance) , h/2-(distance_from_horizontal_edges/2)]
-        trial_text = visual.TextStim(win=win, 
-                                    text='شماره انتخاب  :',
-                                    color=igt_font_color, 
-                                    languageStyle='Arabic', 
-                                    font='IRANSans',
-                                    height=font_size,
-                                    bold=True,
-                                    wrapWidth=w,
-                                    pos=trial_text_pos,
-                                    anchorHoriz='right',
-                                    alignText='right'
-                                    )
-                                    
-        trial_number_text_pos = [-(2*card_width + 1.5*cards_distance) , h/2-(distance_from_horizontal_edges/2)]
-        trial_number_text = visual.TextStim(win=win, 
-                                    text=str(trial_number).zfill(3),
-                                    color=igt_font_color, 
-                                    languageStyle='Arabic', 
-                                    font='IRANSans',
-                                    height=font_size,
-                                    bold=True,
-                                    wrapWidth=w,
-                                    pos=trial_number_text_pos,
-                                    anchorHoriz='left',
-                                    alignText='left'
-                                    )
-                                    
-        score_text_pos = [+(2*card_width + 1.5*cards_distance) , h/2-(distance_from_horizontal_edges/2)]
-        score_text = visual.TextStim(win=win, 
-                                    text='موجودی  :',
-                                    color=igt_font_color, 
-                                    languageStyle='Arabic', 
-                                    font='IRANSans',
-                                    height=font_size,
-                                    bold=True,
-                                    wrapWidth=w,
-                                    pos=score_text_pos,
-                                    anchorHoriz='right',
-                                    alignText='right'
-                                    )
-                                    
-        score_value_text_pos = [+(1.5*card_width + 1.5*cards_distance) , h/2-(distance_from_horizontal_edges/2)]
-        score_value_text = visual.TextStim(win=win, 
-                                    text="{:.2f}". format(igt_Liquidity)+'$  ',
-                                    color=igt_font_color, 
-                                    languageStyle='Arabic', 
-                                    font='IRANSans',
-                                    height=font_size,
-                                    bold=True,
-                                    wrapWidth=w,
-                                    pos=score_value_text_pos,
-                                    anchorHoriz='right',
-                                    alignText='right'
-                                    )
-                                    
-        win_text_pos = [0, h/4 + distance_from_horizontal_edges/4]
-        win_text = visual.TextStim(win=win, 
-                                    text='',
-                                    color=igt_font_color, 
-                                    languageStyle='Arabic', 
-                                    font='IRANSans',
-                                    height=font_size,
-                                    bold=True,
-                                    wrapWidth=w,
-                                    pos=win_text_pos,
-                                    )
-                                    
-        lose_text_pos = [0, h/4 - distance_from_horizontal_edges/4]
-        lose_text = visual.TextStim(win=win, 
-                                    text='',
-                                    color=igt_font_color, 
-                                    languageStyle='Arabic', 
-                                    font='IRANSans',
-                                    height=font_size,
-                                    bold=True,
-                                    wrapWidth=w,
-                                    pos=lose_text_pos,
-                                    )
-                                    
-        win_rect_pos = [0, h/4 + distance_from_horizontal_edges/4]       
+        card1_text_pos = [
+            -(1.5 * card_width + 1.5 * cards_distance),
+            -(h / 2 - (distance_from_horizontal_edges / 2)),
+        ]
+        card2_text_pos = [
+            -(0.5 * card_width + 0.5 * cards_distance),
+            -(h / 2 - (distance_from_horizontal_edges / 2)),
+        ]
+        card3_text_pos = [
+            +(0.5 * card_width + 0.5 * cards_distance),
+            -(h / 2 - (distance_from_horizontal_edges / 2)),
+        ]
+        card4_text_pos = [
+            +(1.5 * card_width + 1.5 * cards_distance),
+            -(h / 2 - (distance_from_horizontal_edges / 2)),
+        ]
+
+        card1_text = visual.TextStim(
+            win=win,
+            text=catalog.text("deck", number=1),
+            color=cfg.igt_font_color,
+            **catalog.text_options,
+            height=font_size,
+            bold=True,
+            wrapWidth=w,
+            pos=card1_text_pos,
+        )
+        card2_text = visual.TextStim(
+            win=win,
+            text=catalog.text("deck", number=2),
+            color=cfg.igt_font_color,
+            **catalog.text_options,
+            height=font_size,
+            bold=True,
+            wrapWidth=w,
+            pos=card2_text_pos,
+        )
+        card3_text = visual.TextStim(
+            win=win,
+            text=catalog.text("deck", number=3),
+            color=cfg.igt_font_color,
+            **catalog.text_options,
+            height=font_size,
+            bold=True,
+            wrapWidth=w,
+            pos=card3_text_pos,
+        )
+        card4_text = visual.TextStim(
+            win=win,
+            text=catalog.text("deck", number=4),
+            color=cfg.igt_font_color,
+            **catalog.text_options,
+            height=font_size,
+            bold=True,
+            wrapWidth=w,
+            pos=card4_text_pos,
+        )
+
+        trial_text_pos = [
+            -((1 if catalog.is_rtl else 2) * card_width + 1.5 * cards_distance),
+            h / 2 - (distance_from_horizontal_edges / 2),
+        ]
+        trial_text = visual.TextStim(
+            win=win,
+            text=catalog.text("igt_trial"),
+            color=cfg.igt_font_color,
+            **catalog.text_options,
+            height=font_size,
+            bold=True,
+            wrapWidth=w,
+            pos=trial_text_pos,
+            anchorHoriz="right" if catalog.is_rtl else "left",
+            alignText="right" if catalog.is_rtl else "left",
+        )
+
+        trial_number_text_pos = [
+            -((2 if catalog.is_rtl else 1) * card_width + 1.5 * cards_distance),
+            h / 2 - (distance_from_horizontal_edges / 2),
+        ]
+        trial_number_text = visual.TextStim(
+            win=win,
+            text=str(trial_number).zfill(3),
+            color=cfg.igt_font_color,
+            **catalog.text_options,
+            height=font_size,
+            bold=True,
+            wrapWidth=w,
+            pos=trial_number_text_pos,
+            anchorHoriz="left" if catalog.is_rtl else "right",
+            alignText="left" if catalog.is_rtl else "right",
+        )
+
+        score_text_pos = [
+            +((2 if catalog.is_rtl else 1.5) * card_width + 1.5 * cards_distance),
+            h / 2 - (distance_from_horizontal_edges / 2),
+        ]
+        score_text = visual.TextStim(
+            win=win,
+            text=catalog.text("igt_balance"),
+            color=cfg.igt_font_color,
+            **catalog.text_options,
+            height=font_size,
+            bold=True,
+            wrapWidth=w,
+            pos=score_text_pos,
+            anchorHoriz="right",
+            alignText="right",
+        )
+
+        score_value_text_pos = [
+            +((1.5 if catalog.is_rtl else 2) * card_width + 1.5 * cards_distance),
+            h / 2 - (distance_from_horizontal_edges / 2),
+        ]
+        score_value_text = visual.TextStim(
+            win=win,
+            text=catalog.text("igt_amount", amount=igt_Liquidity),
+            color=cfg.igt_font_color,
+            **catalog.text_options,
+            height=font_size,
+            bold=True,
+            wrapWidth=w,
+            pos=score_value_text_pos,
+            anchorHoriz="right",
+            alignText="right",
+        )
+
+        win_text_pos = [0, h / 4 + distance_from_horizontal_edges / 4]
+        win_text = visual.TextStim(
+            win=win,
+            text="",
+            color=cfg.igt_font_color,
+            **catalog.text_options,
+            height=font_size,
+            bold=True,
+            wrapWidth=w,
+            pos=win_text_pos,
+        )
+
+        lose_text_pos = [0, h / 4 - distance_from_horizontal_edges / 4]
+        lose_text = visual.TextStim(
+            win=win,
+            text="",
+            color=cfg.igt_font_color,
+            **catalog.text_options,
+            height=font_size,
+            bold=True,
+            wrapWidth=w,
+            pos=lose_text_pos,
+        )
+
+        win_rect_pos = [0, h / 4 + distance_from_horizontal_edges / 4]
         win_rect = visual.Rect(
             win=win,
             units="pix",
-            width=w/3,
-            height=0.9*(distance_from_horizontal_edges/2),
+            width=w / 3,
+            height=0.9 * (distance_from_horizontal_edges / 2),
             fillColor=[0, 1, 0],
             lineColor=[1, 1, 1],
-            pos=win_rect_pos
+            pos=win_rect_pos,
         )
 
-        lose_rect_pos = [0, h/4 - distance_from_horizontal_edges/4]
+        lose_rect_pos = [0, h / 4 - distance_from_horizontal_edges / 4]
         lose_rect = visual.Rect(
             win=win,
             units="pix",
-            width=w/3,
-            height=0.9*(distance_from_horizontal_edges/2),
+            width=w / 3,
+            height=0.9 * (distance_from_horizontal_edges / 2),
             fillColor=[1, 0, 0],
             lineColor=[1, 1, 1],
-            pos=lose_rect_pos
+            pos=lose_rect_pos,
         )
-
 
         def draw_main():
             card1_img.draw()
@@ -264,25 +327,24 @@ def igt_experiment():
             score_text.draw()
             trial_number_text.draw()
             score_value_text.draw()
-            
 
-        mouse_status = 'UP'
+        mouse_status = "UP"
         break_break = 0
         click_on_card = 0
         sleep = 0
-        finished = False
-        last_time = time.time()
+        last_time = time.perf_counter()
 
-        while (trial_number <= igt_total_number_of_trials) and (not break_break):
-            if keyboard.is_pressed('i'):
+        while (trial_number <= cfg.igt_total_number_of_trials) and (not break_break):
+            check_abort()
+            if keys.getState(cfg.controls["skip"]):
                 break_break = 1
-                
+
             draw_main()
-            
+
             buttons = myMouse.getPressed(getTime=False)
-            
-            if mouse_status == 'UP' and buttons[0] == 1:
-                mouse_status = 'DOWN'
+
+            if mouse_status == "UP" and buttons[0] == 1:
+                mouse_status = "DOWN"
                 if myMouse.isPressedIn(card1_img):
                     click_on_card = 1
                     gain, loss = gain_loss(1)
@@ -299,34 +361,31 @@ def igt_experiment():
                     click_on_card = 4
                     gain, loss = gain_loss(4)
 
-              
-              
-            if mouse_status == 'DOWN' and buttons[0] == 0:
-                mouse_status = 'UP'
-                
+            if mouse_status == "DOWN" and buttons[0] == 0:
+                mouse_status = "UP"
+
                 if click_on_card > 0:
-                
                     trial_info = {
-                    'section'   : 'IGT',
-                    'trial'     : trial_number,
-                    'choice'    : click_on_card,
-                    'gain'      : gain,
-                    'loss'      : loss,
-                    'RT'        : time.time() - last_time
-                    } 
-                    data = data.append(trial_info, ignore_index=True)
-                    
+                        "section": "IGT",
+                        "trial": trial_number,
+                        "choice": click_on_card,
+                        "gain": gain,
+                        "loss": loss,
+                        "RT": time.perf_counter() - last_time,
+                    }
+                    results.append(trial_info)
+
                     sleep = 1
                     if gain > 0:
-                        win_text.text = f'شما برنده {gain} دلار شدید.'
+                        win_text.text = catalog.text("igt_gain", amount=gain)
                         win_rect.draw()
                         win_text.draw()
-                            
+
                     if loss > 0:
-                        lose_text.text = f'اما شما همچنین {loss} دلار از دست دادید.'
+                        lose_text.text = catalog.text("igt_loss", amount=loss)
                         lose_rect.draw()
                         lose_text.draw()
-                        
+
                     if click_on_card == 1:
                         card1_back_img.draw()
                     elif click_on_card == 2:
@@ -335,132 +394,151 @@ def igt_experiment():
                         card3_back_img.draw()
                     elif click_on_card == 4:
                         card4_back_img.draw()
-                        
-                    click_on_card = 0
-                        
-            win.flip()
 
+                    click_on_card = 0
+
+            win.flip()
 
             if sleep:
                 sleep = 0
-                time.sleep(igt_sleep_time)
+                core.wait(cfg.igt_sleep_time)
                 igt_Liquidity = igt_Liquidity + gain - loss
-                score_value_text.text = "{:.2f}". format(igt_Liquidity)+'$  '
+                score_value_text.text = catalog.text("igt_amount", amount=igt_Liquidity)
                 trial_number += 1
                 trial_number_text.text = str(trial_number).zfill(3)
-                last_time = time.time()
-                
-        total_liquidity += igt_Liquidity - igt_initial_liquidity
-        
+                last_time = time.perf_counter()
 
-def bart_experiment():
-    global data, w, h, total_liquidity, font_size, distance_from_vertical_edges, distance_from_horizontal_edges
+        total_liquidity += igt_Liquidity - cfg.igt_initial_liquidity
 
-    if not bart_skip:
-        
-        #Instructions
-        
-        instruction_text = visual.TextStim(win=win,
-                                          text= """این آزمون برای ارزیابی تصمیم گیری شما است. 
-        این یک بازی است که در آن شما باید درآمد خود را در یک رقابت بادکردن بادکنکی بهینه کنید. 
-        شما برای هر بار باد کردن بادکنک منطبق با سایز آن مقداری پول جایزه می گیرید ،
-         اما در صورتی که آنرا بیش از حد باد کنید، منفجر می شود و برای آن بادکنک پولی دریافت نخواهید کرد.
-         بادکنک ها در حداکثر اندازه خود متفاوت هستند . 
-        گاهی اوقات می توانند تقریباً به اندازه صفحه نمایش برسند اما بیشتر آنها قبل از آن منفجر می شوند.
-         برای بادکردن بادکنک ها باید دکمه SPACE را فشار دهید. 
-        شما دو بانک فعلی و اصلی دارید.
-         بانک فعلی مقدار پول مرتبط با بادکنک حال حاضر است و بانک اصلی مجموع پول جمع شده در کل آزمون است.
-         شما می توانید با  فشار دادن دکمه ENTER قبل از ترکیدن بادکنک، 
-        پول جمع آوری شده در بادکنک فعلی را به بانک اصلی انتقال دهید
-         و به مرحله بعد بروید.
 
-        توجه: لطفا با دقت پاسخ دهید. درصدی از مبلغی که در بانک اصلی جمع کرده اید، در آخر آزمون به شما نقدا پرداخت خواهد شد.
+def bart_experiment(catalog):
+    global total_liquidity
 
-        برای شروع آزمون، هر موقع آماده بودید کلید SPACE را فشار دهید.""",
-                                          color=bart_font_color,
-                                          languageStyle='Arabic', 
-                                          font='IRANSans',
-                                          height=font_size,
-                                          bold=True,
-                                          wrapWidth=w)
-                                          
+    if not cfg.bart_skip:
+        # Instructions
+
+        instruction_text = visual.TextStim(
+            win=win,
+            text=catalog.text(
+                "bart_instructions",
+                pump_key=cfg.controls["pump"].upper(),
+                collect_key=cfg.controls["collect"].upper(),
+                advance_key=cfg.controls["advance"].upper(),
+            ),
+            color=cfg.bart_font_color,
+            **catalog.text_options,
+            height=font_size,
+            bold=True,
+            wrapWidth=w,
+        )
+
         instruction_text.draw()
         win.flip()
-        event.waitKeys(keyList=['space'])
+        wait_for_advance()
 
-        #Experiment
+        sounds = {
+            name: sound.Sound(path)
+            for name, enabled, path in (
+                ("blow", cfg.bart_blow_sound, cfg.bart_blow_path),
+                ("burst", cfg.bart_burst_sound, cfg.bart_burst_path),
+                ("collect", cfg.bart_collect_sound, cfg.bart_collect_path),
+            )
+            if enabled
+        }
 
-        min_balloon_size = [w/40,h/20]
-        max_balloon_size = [w/2,h]
+        # Experiment
 
-        rope_img_pos = [0,-h/2]
-        balloon_img_pos = [0,-113*h/280]
-        rope_img = visual.ImageStim(win=win, image=bart_rope_path, units='pix', pos=rope_img_pos, size=[w/11,h/7])
-        balloon_img = visual.ImageStim(win=win, image=bart_balloon_path, units='pix', pos=balloon_img_pos, size=min_balloon_size)
-            
+        min_balloon_size = [w / 40, h / 20]
+        max_balloon_size = [w / 2, h]
+
+        rope_img_pos = [0, -h / 2]
+        balloon_img_pos = [0, -113 * h / 280]
+        rope_img = visual.ImageStim(
+            win=win, image=cfg.bart_rope_path, units="pix", pos=rope_img_pos, size=[w / 11, h / 7]
+        )
+        balloon_img = visual.ImageStim(
+            win=win,
+            image=cfg.bart_balloon_path,
+            units="pix",
+            pos=balloon_img_pos,
+            size=min_balloon_size,
+        )
+
         def balloon_pos_size_calculator(blow_num):
-            # global min_balloon_size , max_balloon_size , bart_max_balloon_capacity , w , h
-            
-            balloon_size = [min_balloon_size[0] + ((blow_num)*((max_balloon_size[0] - min_balloon_size[0])/bart_max_balloon_capacity)) ,
-                            min_balloon_size[1] + ((blow_num)*((max_balloon_size[1] - min_balloon_size[1])/bart_max_balloon_capacity))]
-            balloon_pos = [0, (-3*h/7) + balloon_size[1]/2]
-            
-            return balloon_size , balloon_pos
-                
 
-        current_bank_text = visual.TextStim(win=win, text='ارزش این بادکنک  :  $0.00',
-                                                              pos=[0,0],
-                                                              color=bart_font_color,
-                                                              languageStyle='Arabic', 
-                                                              font='IRANSans',
-                                                              height=font_size,
-                                                              bold=True,
-                                                              wrapWidth=w)
+            balloon_size = [
+                min_balloon_size[0]
+                + (
+                    (blow_num)
+                    * ((max_balloon_size[0] - min_balloon_size[0]) / cfg.bart_max_balloon_capacity)
+                ),
+                min_balloon_size[1]
+                + (
+                    (blow_num)
+                    * ((max_balloon_size[1] - min_balloon_size[1]) / cfg.bart_max_balloon_capacity)
+                ),
+            ]
+            balloon_pos = [0, (-3 * h / 7) + balloon_size[1] / 2]
 
+            return balloon_size, balloon_pos
 
-        trial_number_text = visual.TextStim(win=win, text='شماره بادکنک  :  01',
-                                                              pos=[-(w/2 - (distance_from_vertical_edges)),(-h/2) + distance_from_vertical_edges],
-                                                              anchorHoriz='left',
-                                                              alignText='left',                                                      
-                                                              color=bart_font_color,
-                                                              languageStyle='Arabic', 
-                                                              font='IRANSans',
-                                                              height=font_size,
-                                                              bold=True,
-                                                              wrapWidth=w)
+        current_bank_text = visual.TextStim(
+            win=win,
+            text=catalog.text("balloon_value", amount=0),
+            pos=[0, 0],
+            color=cfg.bart_font_color,
+            **catalog.text_options,
+            height=font_size,
+            bold=True,
+            wrapWidth=w,
+        )
 
+        trial_number_text = visual.TextStim(
+            win=win,
+            text=catalog.text("balloon_trial", number=1),
+            pos=[
+                -(w / 2 - (distance_from_vertical_edges)),
+                (-h / 2) + distance_from_vertical_edges,
+            ],
+            anchorHoriz="left",
+            alignText="left",
+            color=cfg.bart_font_color,
+            **catalog.text_options,
+            height=font_size,
+            bold=True,
+            wrapWidth=w,
+        )
 
-        main_bank_text = visual.TextStim(win=win, text='موجودی بانک اصلی  :  $0.00',
-                                                              pos=[(w/2) - distance_from_vertical_edges , (-h/2) + distance_from_vertical_edges],
-                                                              anchorHoriz='right',
-                                                              alignText='right',
-                                                              color=bart_font_color,
-                                                              languageStyle='Arabic', 
-                                                              font='IRANSans',
-                                                              height=font_size,
-                                                              bold=True,
-                                                              wrapWidth=w)
-                                                              
+        main_bank_text = visual.TextStim(
+            win=win,
+            text=catalog.text("bank_balance", amount=0),
+            pos=[(w / 2) - distance_from_vertical_edges, (-h / 2) + distance_from_vertical_edges],
+            anchorHoriz="right",
+            alignText="right",
+            color=cfg.bart_font_color,
+            **catalog.text_options,
+            height=font_size,
+            bold=True,
+            wrapWidth=w,
+        )
 
-
-        trial_number = 1    
+        trial_number = 1
         main_liquidity = 0
         break_break = 0
-        space_status = 'UP'
-        return_status = 'UP'
+        space_status = "UP"
+        return_status = "UP"
 
-        while (trial_number <= bart_total_number_of_trials) and (not break_break) : 
-            
+        while (trial_number <= cfg.bart_total_number_of_trials) and (not break_break):
             blow_num = 0
             bursted = 0
             collected = 0
             current_liquidity = 0
             space_counter = 0
-            
+
             balloon_img.size = min_balloon_size
-            balloon_img.pos = balloon_img_pos 
-            current_bank_text.text = 'ارزش این بادکنک  :  $0.00'
-            trial_number_text.text = f'شماره بادکنک  :  {str(trial_number).zfill(2)}'
+            balloon_img.pos = balloon_img_pos
+            current_bank_text.text = catalog.text("balloon_value", amount=0)
+            trial_number_text.text = catalog.text("balloon_trial", number=trial_number)
 
             rope_img.draw()
             balloon_img.draw()
@@ -469,27 +547,32 @@ def bart_experiment():
             main_bank_text.draw()
 
             win.flip()
-            
-            while (not collected) and (not bursted) and (not break_break):
+            last_time = time.perf_counter()
 
-                if keyboard.is_pressed('space'):
-                    space_status = 'DOWN'
-                        
+            while (not collected) and (not bursted) and (not break_break):
+                check_abort()
+                core.wait(0.001)
+
+                if keys.getState(cfg.controls["pump"]):
+                    space_status = "DOWN"
+
                     space_counter += 1
-                    if space_counter % bart_blowing_factor == 1:
+                    if (space_counter - 1) % cfg.bart_blowing_factor == 0:
                         blow_num += 1
-                        if not burst_or_not(blow_num) :
-                            balloon_size , balloon_pos = balloon_pos_size_calculator(blow_num)
-                             
+                        if not burst_or_not(blow_num):
+                            balloon_size, balloon_pos = balloon_pos_size_calculator(blow_num)
+
                             balloon_img.size = balloon_size
                             balloon_img.pos = balloon_pos
-                            
-                            current_liquidity = blow_num * bart_blow_addition
-                            current_bank_text.text = f'ارزش این بادکنک  :  ${"{:.2f}".format(current_liquidity)}'
-                            
-                            if bart_blow_sound:
-                                playsound(bart_blow_path)
-                            
+
+                            current_liquidity = blow_num * cfg.bart_blow_addition
+                            current_bank_text.text = catalog.text(
+                                "balloon_value", amount=current_liquidity
+                            )
+
+                            if cfg.bart_blow_sound:
+                                sounds["blow"].play()
+
                             rope_img.draw()
                             balloon_img.draw()
                             current_bank_text.draw()
@@ -497,441 +580,431 @@ def bart_experiment():
                             main_bank_text.draw()
                             win.flip()
 
-                        else :
-                            if bart_burst_sound:
-                                playsound(bart_burst_path)
-                                
+                        else:
+                            if cfg.bart_burst_sound:
+                                sounds["burst"].play()
+
                             bursted = True
 
                             trial_info = {
-                            'section'   : 'BART',
-                            'trial'     : trial_number,
-                            'pumps'     : blow_num,
-                            'gain'      : 0,
-                            'explosion'  : 1,
-                            } 
-                            data = data.append(trial_info, ignore_index=True)
-                            
-                    
-                elif keyboard.is_pressed('return') and return_status == 'UP':
-                    space_status = 'UP'
-                    return_status = 'DOWN'
-                    
-                elif keyboard.is_pressed('i'):
-                    space_status = 'UP'
+                                "section": "BART",
+                                "trial": trial_number,
+                                "pumps": blow_num,
+                                "gain": 0,
+                                "explosion": 1,
+                                "RT": time.perf_counter() - last_time,
+                            }
+                            results.append(trial_info)
+
+                elif keys.getState(cfg.controls["collect"]) and return_status == "UP":
+                    space_status = "UP"
+                    return_status = "DOWN"
+
+                elif keys.getState(cfg.controls["skip"]):
+                    space_status = "UP"
                     break_break = True
-                    
+
                 else:
-                    space_status = 'UP'
-                    
-                if space_status == 'UP':
+                    space_status = "UP"
+
+                if space_status == "UP":
                     space_counter = 0
-                    
-                if not keyboard.is_pressed('return') and return_status == 'DOWN':
-                    return_status = 'UP'
-                    if bart_collect_sound:
-                        playsound(bart_collect_path)
-                        
+
+                if (
+                    not bursted
+                    and not break_break
+                    and not keys.getState(cfg.controls["collect"])
+                    and return_status == "DOWN"
+                ):
+                    return_status = "UP"
+                    if cfg.bart_collect_sound:
+                        sounds["collect"].play()
+
                     collected = True
 
                     trial_info = {
-                    'section'   : 'BART',
-                    'trial'     : trial_number,
-                    'pumps'     : blow_num,
-                    'gain'      : current_liquidity,
-                    'explosion'  : 0
-                    } 
-                    data = data.append(trial_info, ignore_index=True)
+                        "section": "BART",
+                        "trial": trial_number,
+                        "pumps": blow_num,
+                        "gain": current_liquidity,
+                        "explosion": 0,
+                        "RT": time.perf_counter() - last_time,
+                    }
+                    results.append(trial_info)
 
-                      
-            if not bursted :
-                main_liquidity += current_liquidity 
-                main_bank_text.text = f'موجودی بانک اصلی  :  ${"{:.2f}".format(main_liquidity)}'
-                
+            if collected:
+                main_liquidity += current_liquidity
+                main_bank_text.text = catalog.text("bank_balance", amount=main_liquidity)
+
             trial_number += 1
-            
+
         total_liquidity += main_liquidity
-        
-def survey(section):
-    global h, w, myMouse, data
-    first_survey_text = visual.TextStim(win=win,
-        text= """لطفا هیجان فعلی خود را در دو پرسشنامه زیر بیان کنید. 
-        شما می توانید در پرسشنامه اول میزان برانگیخته بودن یا آرام بودن در حال حاضر 
-        و در پرسشنامه دوم خوشایند بودن یا ناخوشایند بودن وضعیت هیجانی خود را بیان کنید.
-        شما می توانید به وضعیت هیجانی خود از 1 تا 9 نمره بدهید. با کلیک کردن روی شماره مورد نظر نمره شما ثبت خواهد شد.""",
-        color=font_color,
-        languageStyle='Arabic', 
-        font='IRANSans',
+
+
+def make_rating_row(catalog, y, size, spacing):
+    """Use catalog-selected numeral images or native text buttons, with equal hit areas."""
+    targets, labels = [], []
+    for number in range(1, 10):
+        pos = [(number - 5) * spacing, y]
+        if catalog.rating_image_pattern:
+            setting = catalog.rating_image_pattern.format(number=number, state="unselected")
+            target = visual.ImageStim(win, image=getattr(cfg, setting), size=size, pos=pos)
+        else:
+            target = visual.Rect(
+                win=win,
+                width=size[0],
+                height=size[1],
+                pos=pos,
+                fillColor=catalog.rating_colors["unselected"],
+                lineColor=catalog.rating_colors["unselected"],
+            )
+            labels.append(
+                visual.TextStim(
+                    win=win,
+                    text=str(number),
+                    pos=pos,
+                    height=size[1] * 0.7,
+                    color=cfg.font_color,
+                    bold=True,
+                    **catalog.text_options,
+                )
+            )
+        targets.append(target)
+    return targets, labels
+
+
+def update_rating_selection(catalog, targets, selected):
+    """Highlight the selected value without changing its ordinal or click target."""
+    for number, target in enumerate(targets, 1):
+        state = "selected" if number == selected else "unselected"
+        if catalog.rating_image_pattern:
+            setting = catalog.rating_image_pattern.format(number=number, state=state)
+            target.image = getattr(cfg, setting)
+        else:
+            target.fillColor = catalog.rating_colors[state]
+            target.lineColor = catalog.rating_colors[state]
+
+
+def survey(section, catalog):
+    first_survey_text = visual.TextStim(
+        win=win,
+        text=catalog.text("survey_instructions"),
+        color=cfg.font_color,
+        **catalog.text_options,
         height=font_size,
         bold=True,
         wrapWidth=w,
-        anchorVert = 'top',
-        pos=[0,(h/2) - (distance_from_horizontal_edges/3)])
-    
-    press_space_to_proceed = visual.TextStim(win=win,
-        text= "برای ادامه کلید SPACE را فشار دهید.",
-        color=font_color,
-        languageStyle='Arabic', 
-        font='IRANSans',
+        anchorVert="top",
+        pos=[0, (h / 2) - (distance_from_horizontal_edges / 3)],
+    )
+
+    press_space_to_proceed = visual.TextStim(
+        win=win,
+        text=catalog.text("continue", advance_key=cfg.controls["advance"].upper()),
+        color=cfg.font_color,
+        **catalog.text_options,
         height=font_size,
         bold=True,
         wrapWidth=w,
-        anchorVert = 'bottom',
-        pos=[0,(-h/2) + (distance_from_horizontal_edges/3)])
-        
-    sam_width = 2*w/20
+        anchorVert="bottom",
+        pos=[0, (-h / 2) + (distance_from_horizontal_edges / 3)],
+    )
+
+    sam_width = 2 * w / 20
     sam_height = sam_width
     sam_size = [sam_width, sam_height]
-    sam_distance_between = w/20
-    sam_distance_from_vertical_edges = 3*w/20
+    sam_distance_between = w / 20
+    sam_distance_from_vertical_edges = 3 * w / 20
 
-    arousal_height = h/9
-    
-    arousal_1_pos = [-(2*sam_width + 2*sam_distance_between) ,arousal_height]
-    arousal_2_pos = [-(1*sam_width + 1*sam_distance_between) ,arousal_height]
-    arousal_3_pos = [0,arousal_height]
-    arousal_4_pos = [+(1*sam_width + 1*sam_distance_between) ,arousal_height]
-    arousal_5_pos = [+(2*sam_width + 2*sam_distance_between) ,arousal_height]
-    
-    arousal_1 = visual.ImageStim(win, image=arousal_1_path, size=sam_size, pos=arousal_1_pos)
-    arousal_2 = visual.ImageStim(win, image=arousal_2_path, size=sam_size, pos=arousal_2_pos)
-    arousal_3 = visual.ImageStim(win, image=arousal_3_path, size=sam_size, pos=arousal_3_pos)
-    arousal_4 = visual.ImageStim(win, image=arousal_4_path, size=sam_size, pos=arousal_4_pos)
-    arousal_5 = visual.ImageStim(win, image=arousal_5_path, size=sam_size, pos=arousal_5_pos)
-    
-    least_arousal = visual.TextStim(win=win,
-        text= "آرام",
-        color=font_color,
-        languageStyle='Arabic', 
-        font='IRANSans',
+    arousal_height = h / 9
+
+    arousal_1_pos = [-(2 * sam_width + 2 * sam_distance_between), arousal_height]
+    arousal_2_pos = [-(1 * sam_width + 1 * sam_distance_between), arousal_height]
+    arousal_3_pos = [0, arousal_height]
+    arousal_4_pos = [+(1 * sam_width + 1 * sam_distance_between), arousal_height]
+    arousal_5_pos = [+(2 * sam_width + 2 * sam_distance_between), arousal_height]
+
+    arousal_1 = visual.ImageStim(win, image=cfg.arousal_1_path, size=sam_size, pos=arousal_1_pos)
+    arousal_2 = visual.ImageStim(win, image=cfg.arousal_2_path, size=sam_size, pos=arousal_2_pos)
+    arousal_3 = visual.ImageStim(win, image=cfg.arousal_3_path, size=sam_size, pos=arousal_3_pos)
+    arousal_4 = visual.ImageStim(win, image=cfg.arousal_4_path, size=sam_size, pos=arousal_4_pos)
+    arousal_5 = visual.ImageStim(win, image=cfg.arousal_5_path, size=sam_size, pos=arousal_5_pos)
+
+    least_arousal = visual.TextStim(
+        win=win,
+        text=catalog.text("arousal_low"),
+        color=cfg.font_color,
+        **catalog.text_options,
         height=font_size,
         bold=True,
         wrapWidth=w,
-        anchorVert = 'bottom',
-        pos=[-(w/2 - sam_distance_from_vertical_edges/2),arousal_height])
-        
-    most_arousal = visual.TextStim(win=win,
-        text= "برانگیخته",
-        color=font_color,
-        languageStyle='Arabic', 
-        font='IRANSans',
+        anchorVert="bottom",
+        pos=[-(w / 2 - sam_distance_from_vertical_edges / 2), arousal_height],
+    )
+
+    most_arousal = visual.TextStim(
+        win=win,
+        text=catalog.text("arousal_high"),
+        color=cfg.font_color,
+        **catalog.text_options,
         height=font_size,
         bold=True,
         wrapWidth=w,
-        pos=[+(w/2 - sam_distance_from_vertical_edges/2),arousal_height])
-    
-    number_size = [w/30,w/30]
-    arousal_number_height = arousal_height - sam_height/2 - 0.7*number_size[1]
+        pos=[+(w / 2 - sam_distance_from_vertical_edges / 2), arousal_height],
+    )
 
-    arousal_number1_pos = [-(2*sam_width + 2*sam_distance_between) ,arousal_number_height]
-    arousal_number2_pos = [-(1.5*sam_width + 1.5*sam_distance_between) ,arousal_number_height]
-    arousal_number3_pos = [-(1*sam_width + 1*sam_distance_between) ,arousal_number_height]
-    arousal_number4_pos = [-(0.5*sam_width + 0.5*sam_distance_between) ,arousal_number_height]
-    arousal_number5_pos = [0 ,arousal_number_height]
-    arousal_number6_pos = [+(0.5*sam_width + 0.5*sam_distance_between) ,arousal_number_height]
-    arousal_number7_pos = [+(1*sam_width + 1*sam_distance_between) ,arousal_number_height]
-    arousal_number8_pos = [+(1.5*sam_width + 1.5*sam_distance_between) ,arousal_number_height]
-    arousal_number9_pos = [+(2*sam_width + 2*sam_distance_between) ,arousal_number_height]
-    
-    arousal_number1 = visual.ImageStim(win, image=number1_unselected_path, size=number_size, pos=arousal_number1_pos)
-    arousal_number2 = visual.ImageStim(win, image=number2_unselected_path, size=number_size, pos=arousal_number2_pos)
-    arousal_number3 = visual.ImageStim(win, image=number3_unselected_path, size=number_size, pos=arousal_number3_pos)
-    arousal_number4 = visual.ImageStim(win, image=number4_unselected_path, size=number_size, pos=arousal_number4_pos)
-    arousal_number5 = visual.ImageStim(win, image=number5_unselected_path, size=number_size, pos=arousal_number5_pos)
-    arousal_number6 = visual.ImageStim(win, image=number6_unselected_path, size=number_size, pos=arousal_number6_pos)
-    arousal_number7 = visual.ImageStim(win, image=number7_unselected_path, size=number_size, pos=arousal_number7_pos)
-    arousal_number8 = visual.ImageStim(win, image=number8_unselected_path, size=number_size, pos=arousal_number8_pos)
-    arousal_number9 = visual.ImageStim(win, image=number9_unselected_path, size=number_size, pos=arousal_number9_pos)
+    number_size = [w / 30, w / 30]
+    arousal_number_height = arousal_height - sam_height / 2 - 0.7 * number_size[1]
 
-    pleasure_height = -h/5
-    
-    pleasure_1_pos = [-(2*sam_width + 2*sam_distance_between) ,pleasure_height]
-    pleasure_2_pos = [-(1*sam_width + 1*sam_distance_between) ,pleasure_height]
-    pleasure_3_pos = [0,pleasure_height]
-    pleasure_4_pos = [+(1*sam_width + 1*sam_distance_between) ,pleasure_height]
-    pleasure_5_pos = [+(2*sam_width + 2*sam_distance_between) ,pleasure_height]
-    
-    pleasure_1 = visual.ImageStim(win, image=pleasure_1_path, size=sam_size, pos=pleasure_1_pos)
-    pleasure_2 = visual.ImageStim(win, image=pleasure_2_path, size=sam_size, pos=pleasure_2_pos)
-    pleasure_3 = visual.ImageStim(win, image=pleasure_3_path, size=sam_size, pos=pleasure_3_pos)
-    pleasure_4 = visual.ImageStim(win, image=pleasure_4_path, size=sam_size, pos=pleasure_4_pos)
-    pleasure_5 = visual.ImageStim(win, image=pleasure_5_path, size=sam_size, pos=pleasure_5_pos)
-    
-    least_pleasure = visual.TextStim(win=win,
-        text= "خیلی خوشایند",
-        color=font_color,
-        languageStyle='Arabic', 
-        font='IRANSans',
+    arousal_numbers, arousal_labels = make_rating_row(
+        catalog, arousal_number_height, number_size, (sam_width + sam_distance_between) / 2
+    )
+
+    pleasure_height = -h / 5
+
+    pleasure_1_pos = [-(2 * sam_width + 2 * sam_distance_between), pleasure_height]
+    pleasure_2_pos = [-(1 * sam_width + 1 * sam_distance_between), pleasure_height]
+    pleasure_3_pos = [0, pleasure_height]
+    pleasure_4_pos = [+(1 * sam_width + 1 * sam_distance_between), pleasure_height]
+    pleasure_5_pos = [+(2 * sam_width + 2 * sam_distance_between), pleasure_height]
+
+    pleasure_1 = visual.ImageStim(win, image=cfg.pleasure_1_path, size=sam_size, pos=pleasure_1_pos)
+    pleasure_2 = visual.ImageStim(win, image=cfg.pleasure_2_path, size=sam_size, pos=pleasure_2_pos)
+    pleasure_3 = visual.ImageStim(win, image=cfg.pleasure_3_path, size=sam_size, pos=pleasure_3_pos)
+    pleasure_4 = visual.ImageStim(win, image=cfg.pleasure_4_path, size=sam_size, pos=pleasure_4_pos)
+    pleasure_5 = visual.ImageStim(win, image=cfg.pleasure_5_path, size=sam_size, pos=pleasure_5_pos)
+
+    least_pleasure = visual.TextStim(
+        win=win,
+        text=catalog.text("pleasure_high"),
+        color=cfg.font_color,
+        **catalog.text_options,
         height=font_size,
         bold=True,
         wrapWidth=w,
-        pos=[+(w/2 - sam_distance_from_vertical_edges/2),pleasure_height])
-        
-    most_pleasure = visual.TextStim(win=win,
-        text= "خیلی ناخوشایند",
-        color=font_color,
-        languageStyle='Arabic', 
-        font='IRANSans',
+        pos=[+(w / 2 - sam_distance_from_vertical_edges / 2), pleasure_height],
+    )
+
+    most_pleasure = visual.TextStim(
+        win=win,
+        text=catalog.text("pleasure_low"),
+        color=cfg.font_color,
+        **catalog.text_options,
         height=font_size,
         bold=True,
         wrapWidth=w,
-        pos=[-(w/2 - sam_distance_from_vertical_edges/2),pleasure_height])
+        pos=[-(w / 2 - sam_distance_from_vertical_edges / 2), pleasure_height],
+    )
 
-    pleasure_number_height = pleasure_height - sam_height/2 - 0.7*number_size[1]
+    pleasure_number_height = pleasure_height - sam_height / 2 - 0.7 * number_size[1]
 
-    pleasure_number1_pos = [-(2*sam_width + 2*sam_distance_between) ,pleasure_number_height]
-    pleasure_number2_pos = [-(1.5*sam_width + 1.5*sam_distance_between) ,pleasure_number_height]
-    pleasure_number3_pos = [-(1*sam_width + 1*sam_distance_between) ,pleasure_number_height]
-    pleasure_number4_pos = [-(0.5*sam_width + 0.5*sam_distance_between) ,pleasure_number_height]
-    pleasure_number5_pos = [0 ,pleasure_number_height]
-    pleasure_number6_pos = [+(0.5*sam_width + 0.5*sam_distance_between) ,pleasure_number_height]
-    pleasure_number7_pos = [+(1*sam_width + 1*sam_distance_between) ,pleasure_number_height]
-    pleasure_number8_pos = [+(1.5*sam_width + 1.5*sam_distance_between) ,pleasure_number_height]
-    pleasure_number9_pos = [+(2*sam_width + 2*sam_distance_between) ,pleasure_number_height]
-    
-    pleasure_number1 = visual.ImageStim(win, image=number1_unselected_path, size=number_size, pos=pleasure_number1_pos)
-    pleasure_number2 = visual.ImageStim(win, image=number2_unselected_path, size=number_size, pos=pleasure_number2_pos)
-    pleasure_number3 = visual.ImageStim(win, image=number3_unselected_path, size=number_size, pos=pleasure_number3_pos)
-    pleasure_number4 = visual.ImageStim(win, image=number4_unselected_path, size=number_size, pos=pleasure_number4_pos)
-    pleasure_number5 = visual.ImageStim(win, image=number5_unselected_path, size=number_size, pos=pleasure_number5_pos)
-    pleasure_number6 = visual.ImageStim(win, image=number6_unselected_path, size=number_size, pos=pleasure_number6_pos)
-    pleasure_number7 = visual.ImageStim(win, image=number7_unselected_path, size=number_size, pos=pleasure_number7_pos)
-    pleasure_number8 = visual.ImageStim(win, image=number8_unselected_path, size=number_size, pos=pleasure_number8_pos)
-    pleasure_number9 = visual.ImageStim(win, image=number9_unselected_path, size=number_size, pos=pleasure_number9_pos)
-    
+    pleasure_numbers, pleasure_labels = make_rating_row(
+        catalog, pleasure_number_height, number_size, (sam_width + sam_distance_between) / 2
+    )
+
     def draw_survey():
         first_survey_text.draw()
         press_space_to_proceed.draw()
-        arousal_1.draw()
-        arousal_2.draw()
-        arousal_3.draw()
-        arousal_4.draw()
-        arousal_5.draw()
-        most_arousal.draw()
-        least_arousal.draw()
-        arousal_number1.draw()
-        arousal_number2.draw()
-        arousal_number3.draw()
-        arousal_number4.draw()
-        arousal_number5.draw()
-        arousal_number6.draw()
-        arousal_number7.draw()
-        arousal_number8.draw()
-        arousal_number9.draw()
-        pleasure_1.draw()
-        pleasure_2.draw()
-        pleasure_3.draw()
-        pleasure_4.draw()
-        pleasure_5.draw()
-        most_pleasure.draw()
-        least_pleasure.draw()
-        pleasure_number1.draw()
-        pleasure_number2.draw()
-        pleasure_number3.draw()
-        pleasure_number4.draw()
-        pleasure_number5.draw()
-        pleasure_number6.draw()
-        pleasure_number7.draw()
-        pleasure_number8.draw()
-        pleasure_number9.draw()
-        
-    space_status = 'UP'
-    mouse_status = 'UP'
+        for stimulus in (
+            arousal_1,
+            arousal_2,
+            arousal_3,
+            arousal_4,
+            arousal_5,
+            pleasure_1,
+            pleasure_2,
+            pleasure_3,
+            pleasure_4,
+            pleasure_5,
+            most_arousal,
+            least_arousal,
+            most_pleasure,
+            least_pleasure,
+            *arousal_numbers,
+            *pleasure_numbers,
+            *arousal_labels,
+            *pleasure_labels,
+        ):
+            stimulus.draw()
+
+    space_status = "UP"
+    mouse_status = "UP"
     proceed = False
-    selected_arousal_condition  = None
+    selected_arousal_condition = None
     selected_pleasure_condition = None
 
     while not proceed:
+        check_abort()
         draw_survey()
 
         buttons = myMouse.getPressed(getTime=False)
-        
-        if mouse_status == 'UP' and buttons[0] == 1:
-            mouse_status = 'DOWN'
-            
-            #arousal
-            if myMouse.isPressedIn(arousal_number1):
-                selected_arousal_condition = 1
-            elif myMouse.isPressedIn(arousal_number2):
-                selected_arousal_condition = 2
-            elif myMouse.isPressedIn(arousal_number3):
-                selected_arousal_condition = 3
-            elif myMouse.isPressedIn(arousal_number4):
-                selected_arousal_condition = 4
-            elif myMouse.isPressedIn(arousal_number5):
-                selected_arousal_condition = 5
-            elif myMouse.isPressedIn(arousal_number6):
-                selected_arousal_condition = 6
-            elif myMouse.isPressedIn(arousal_number7):
-                selected_arousal_condition = 7
-            elif myMouse.isPressedIn(arousal_number8):
-                selected_arousal_condition = 8
-            elif myMouse.isPressedIn(arousal_number9):
-                selected_arousal_condition = 9
-                
-            #pleasure
-            if myMouse.isPressedIn(pleasure_number1):
-                selected_pleasure_condition = 1
-            elif myMouse.isPressedIn(pleasure_number2):
-                selected_pleasure_condition = 2
-            elif myMouse.isPressedIn(pleasure_number3):
-                selected_pleasure_condition = 3
-            elif myMouse.isPressedIn(pleasure_number4):
-                selected_pleasure_condition = 4
-            elif myMouse.isPressedIn(pleasure_number5):
-                selected_pleasure_condition = 5
-            elif myMouse.isPressedIn(pleasure_number6):
-                selected_pleasure_condition = 6
-            elif myMouse.isPressedIn(pleasure_number7):
-                selected_pleasure_condition = 7
-            elif myMouse.isPressedIn(pleasure_number8):
-                selected_pleasure_condition = 8
-            elif myMouse.isPressedIn(pleasure_number9):
-                selected_pleasure_condition = 9
-                
-        if mouse_status == 'DOWN' and buttons[0] == 0:
-            mouse_status = 'UP'
-            if selected_arousal_condition != None:
-                eval('arousal_number'+str(selected_arousal_condition)).image = eval('number'+str(selected_arousal_condition)+'_selected_path')
-                eval('arousal_number'+str(selected_arousal_condition)).draw()
-                for i in range (1, 10):
-                    if i != selected_arousal_condition:
-                        eval('arousal_number'+str(i)).image = eval('number'+str(i)+'_unselected_path')
-                        eval('arousal_number'+str(i)).draw()
-                        
-            if selected_pleasure_condition != None:
-                eval('pleasure_number'+str(selected_pleasure_condition)).image = eval('number'+str(selected_pleasure_condition)+'_selected_path')
-                eval('pleasure_number'+str(selected_pleasure_condition)).draw()
-                for i in range (1, 10):
-                    if i != selected_pleasure_condition:
-                        eval('pleasure_number'+str(i)).image = eval('number'+str(i)+'_unselected_path')
-                        eval('pleasure_number'+str(i)).draw()
-        
-        if keyboard.is_pressed('space'):
-            space_status = 'DOWN'
-            
-        if not keyboard.is_pressed('space') and space_status == 'DOWN':
-            space_status = 'UP'
-            if selected_arousal_condition != None and selected_pleasure_condition != None:
+
+        if mouse_status == "UP" and buttons[0] == 1:
+            mouse_status = "DOWN"
+
+            for i, stimulus in enumerate(arousal_numbers, 1):
+                if myMouse.isPressedIn(stimulus):
+                    selected_arousal_condition = i
+            for i, stimulus in enumerate(pleasure_numbers, 1):
+                if myMouse.isPressedIn(stimulus):
+                    selected_pleasure_condition = i
+
+        if mouse_status == "DOWN" and buttons[0] == 0:
+            mouse_status = "UP"
+            update_rating_selection(catalog, arousal_numbers, selected_arousal_condition)
+            update_rating_selection(catalog, pleasure_numbers, selected_pleasure_condition)
+
+        if keys.getState(cfg.controls["advance"]):
+            space_status = "DOWN"
+
+        if not keys.getState(cfg.controls["advance"]) and space_status == "DOWN":
+            space_status = "UP"
+            if selected_arousal_condition is not None and selected_pleasure_condition is not None:
                 proceed = True
-            
+
         win.flip()
-        
+
     survey_info = {
-        'arousal'  : selected_arousal_condition,
-        'pleasure' : selected_pleasure_condition,
-        'section'  : section
-        } 
-    data = data.append(survey_info, ignore_index=True)
-        
-    
-#Experiments
-
-try:
-    win = visual.Window(fullscr=fullscreen , color=igt_bg_color, units='pix', size=[1200,675])
-    w, h = win.size
-    total_liquidity = 0
-    font_size = w*0.0175+0.371
-    distance_from_vertical_edges = w/13
-    distance_from_horizontal_edges = 1.2*distance_from_vertical_edges #distance_from_horizontal_edges = h/6
-    myMouse = event.Mouse()
-    
-    
-    #Fixation Point
-    fixation_point_text = visual.TextStim(win=win, 
-                                text='+',
-                                color= font_color,  
-                                height=h,
-                                bold=True,
-                                wrapWidth=w,
-                                pos=[0,h/30]
-                                )
-    fixation_point_text.draw()
-    win.flip()
-    time.sleep(fixation_sleep_time)
-    
-    
-     #First Survey
-     survey(section='before video')
-    
-     #Video 
-     mov = visual.VlcMovieStim(win, video_path,
-         size = [w,h],
-         flipVert=False,  # flip the video picture vertically
-         flipHoriz=False,  # flip the video picture horizontally
-         loop=False,  # replay the video when it reaches the end
-         autoStart=True)  # start the video automatically when first drawn
-       
-     print('Starting Video')
-     skip = 0
-     while not mov.isFinished and not skip:
-         print('Inside While')
-         for key in event.getKeys():
-             print('inside for')
-             if key in ['i']:
-                 mov.stop()
-                 skip = 1
-             elif key in ['r']:
-                 mov.replay()
-             elif key in ['p']:
-                 # To pause the movie while it is playing ...
-                 if mov.isNotStarted or mov.isPaused:
-                     mov.play()
-                 elif mov.isPlaying:
-                     mov.pause()
+        "arousal": selected_arousal_condition,
+        "pleasure": selected_pleasure_condition,
+        "section": section,
+    }
+    results.append(survey_info)
 
 
-         mov.draw()  # movie frame
-         win.flip()  # flip buffers to draw the content to the window
-    
-     #Second Survey
-     survey(section='after video')
-    
+def run(*, catalog=None):
+    """Run one participant session and save partial results on every exit."""
+    global visual, event, core, sound, keys, win, results
+    global w, h, total_liquidity, font_size
+    global distance_from_vertical_edges, distance_from_horizontal_edges, myMouse
+    # Importing this module must not open a dialog or require desktop dependencies.
+    from psychopy import visual, event, gui, core, sound
+    from psychopy.hardware.keyboard import Keyboard
 
-    try:
-        if int(input_gui.data[1])%2 == 0:
-            #IGT
-            igt_experiment()
-            
-            #BART
-            bart_experiment()
+    catalog = load_catalog(cfg.language) if catalog is None else catalog
+    catalog.validate()
+    prepare_config(cfg, needs_number_images=catalog.rating_image_pattern is not None)
+    input_gui = gui.Dlg(title=catalog.text("app_title"))
+    for field in PARTICIPANT_FIELDS:
+        options = PARTICIPANT_CHOICES.get(field)
+        if options:
+            input_gui.addField(
+                catalog.text(f"field.{field}"),
+                choices=[catalog.text(f"choice.{value}") for value in options],
+            )
         else:
-            #BART
-            bart_experiment()
-            
-            #IGT
-            igt_experiment()
-            
-    except:
-            #IGT
-            igt_experiment()
-            
-            #BART
-            bart_experiment()
+            input_gui.addField(catalog.text(f"field.{field}"))
+    input_gui.show()
+    if not input_gui.OK:
+        return
 
-    
-    dollar_win = f'شما برنده {"{:.2f}".format(total_liquidity)} دلار شده اید.'
-    rial_win   = f'شما برنده {int(total_liquidity * dollar_toman)} تومان شده اید.'
-    thanks     = 'از توجه شما سپاسگذاریم.'
-    presstoend = 'برای اتمام آزمون کلید SPACE را فشار دهید.'
-    current_bank_text = visual.TextStim(win=win, 
-    text=f'{dollar_win}\n{rial_win}\n\n{thanks}\n\n{presstoend}',
-                                                                  pos=[0,0],
-                                                                  color=bart_font_color,
-                                                                  languageStyle='Arabic', 
-                                                                  font='IRANSans',
-                                                                  height=font_size,
-                                                                  bold=True,
-                                                                  wrapWidth=w)
-    current_bank_text.draw()
-    win.flip()
-    
-    event.waitKeys(keyList=['space'])
-    
+    results = SessionResults(cfg.output_directory, cfg.column_order)
+    win = None
+    mov = None
+    try:
+        metadata = dict(zip(PARTICIPANT_FIELDS, input_gui.data))
+        # Localize the dialog while keeping stored categorical values compatible.
+        for field, values in PARTICIPANT_CHOICES.items():
+            labels = [catalog.text(f"choice.{value}") for value in values]
+            metadata[field] = values[labels.index(metadata[field])]
+        results.append(dict(metadata, video=cfg.video_name))
+        reset_decks()
+        keys = Keyboard()
+        win = visual.Window(
+            fullscr=cfg.fullscreen, color=cfg.igt_bg_color, units="pix", size=[1200, 675]
+        )
+        w, h = win.size
+        total_liquidity = 0
+        font_size = w * 0.0175 + 0.371
+        distance_from_vertical_edges = w / 13
+        distance_from_horizontal_edges = 1.2 * distance_from_vertical_edges
+        myMouse = event.Mouse(win=win)
+        fixation = visual.TextStim(
+            win=win,
+            text=catalog.text("fixation"),
+            color=cfg.font_color,
+            height=h,
+            bold=True,
+            wrapWidth=w,
+            pos=[0, h / 30],
+        )
+        fixation.draw()
+        win.flip()
+        core.wait(cfg.fixation_sleep_time)
+        survey(section="before video", catalog=catalog)
+        mov = visual.VlcMovieStim(
+            win,
+            cfg.video_path,
+            size=[w, h],
+            flipVert=False,
+            flipHoriz=False,
+            loop=False,
+            autoStart=True,
+        )
+        while not mov.isFinished:
+            check_abort()
+            movie_keys = event.getKeys(
+                keyList=[cfg.controls[key] for key in ("skip", "replay", "pause")]
+            )
+            if cfg.controls["skip"] in movie_keys:
+                break
+            if cfg.controls["replay"] in movie_keys:
+                mov.replay()
+            if cfg.controls["pause"] in movie_keys:
+                if mov.isNotStarted or mov.isPaused:
+                    mov.play()
+                elif mov.isPlaying:
+                    mov.pause()
+            mov.draw()
+            win.flip()
+        mov.stop()
+        survey(section="after video", catalog=catalog)
+        for task in task_order(input_gui.data[1]):
+            if task == "IGT":
+                igt_experiment(catalog)
+            else:
+                bart_experiment(catalog)
 
-except Exception as e:
-    print(e)
-    
-finally:
-    win.close()
-    data.to_excel(file_path ,index=False)
+        text = visual.TextStim(
+            win=win,
+            text=catalog.text(
+                "completion",
+                amount=total_liquidity,
+                toman=int(total_liquidity * cfg.dollar_toman),
+                advance_key=cfg.controls["advance"].upper(),
+            ),
+            pos=[0, 0],
+            color=cfg.bart_font_color,
+            **catalog.text_options,
+            height=font_size,
+            bold=True,
+            wrapWidth=w,
+        )
+        text.draw()
+        win.flip()
+        wait_for_advance()
+    except ExperimentAborted:
+        logging.info("Session stopped by operator; completed responses retained.")
+    finally:
+        # Cleanup failures must not prevent result export, or mask task exceptions.
+        try:
+            if mov is not None:
+                try:
+                    mov.stop()
+                except Exception:
+                    logging.exception("Could not stop video")
+            if win is not None:
+                try:
+                    win.close()
+                except Exception:
+                    logging.exception("Could not close experiment window")
+        finally:
+            try:
+                results.save()
+            finally:
+                results.close()
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    run()
