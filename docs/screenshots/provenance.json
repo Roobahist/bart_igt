@@ -4,8 +4,8 @@
   "psychopy": "2026.2.4",
   "python": "3.11.17",
   "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
-  "source_commit": "16cd7720c05b9a7244dbc0a4ce82c7f481b2cf7d",
-  "workflow_run": "38170869645",
+  "source_commit": "e9caef145451a32aa8998e086de8d1accd260efb",
+  "workflow_run": "38171823962",
   "capture_method": "Window.getMovieFrame(back) before actual Window.flip",
   "screenshots": [
     "sam-survey",
@@ -43,7 +43,7 @@
       "choice": 1,
       "gain": 1,
       "loss": 2,
-      "RT": 0.06692211100001089
+      "RT": 0.021156064999999558
     },
     {
       "section": "IGT",
@@ -51,7 +51,7 @@
       "choice": 1,
       "gain": 1,
       "loss": 3,
-      "RT": 0.00409682400000122
+      "RT": 0.007476285999999277
     },
     {
       "section": "IGT",
@@ -59,7 +59,7 @@
       "choice": 1,
       "gain": 1,
       "loss": 3.5,
-      "RT": 0.004092655999997419
+      "RT": 0.006222371000006888
     },
     {
       "section": "IGT",
@@ -67,7 +67,7 @@
       "choice": 1,
       "gain": 1,
       "loss": 2.5,
-      "RT": 0.004378141000003666
+      "RT": 0.006933744999997771
     },
     {
       "section": "IGT",
@@ -75,7 +75,7 @@
       "choice": 1,
       "gain": 1,
       "loss": 1.5,
-      "RT": 0.004185238999994567
+      "RT": 0.0062495519999998805
     },
     {
       "section": "BART",
@@ -83,7 +83,7 @@
       "pumps": 20,
       "gain": 1.0,
       "explosion": 0,
-      "RT": 0.13911652999999546
+      "RT": 0.09534255300000893
     }
   ]
 }

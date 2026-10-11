@@ -2,7 +2,7 @@
 
 These screenshots are real frames rendered by PsychoPy 2026.2.4 on a disposable
 Ubuntu GitHub-hosted runner using an Xvfb virtual display and software OpenGL.
-They use the application's existing English task and survey rendering functions,
+They use the application's current English task and survey rendering functions,
 with scripted input and synthetic responses. No participant information is present.
 Nothing was installed on the owner's machine.
 
@@ -12,8 +12,12 @@ VLC video playback or the participant dialog. Video content was not captured.
 The SAM demonstration selects 5 on both scales. The IGT chooses deck 1 for five
 trials with seeded randomness. BART collects one balloon after twenty pumps,
 with audio muted. Exact runtime/source details are in [provenance.json](provenance.json).
-The [successful hosted run](https://github.com/Roobahist/bart_igt/actions/runs/38170869645)
+The [successful hosted run](https://github.com/Roobahist/bart_igt/actions/runs/38171823962)
 used PsychoPy 2026.2.4 and Python 3.11.17.
+
+The task redesign replaces the black IGT face and detached feedback bars with
+a light selected card containing gain/loss labels and amounts. See
+[the design decisions](../ui-design.md) for rationale and protocol implications.
 
 ## Screens
 
