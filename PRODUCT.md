@@ -27,7 +27,7 @@ logging, controls, configured hold times, instructions and SAM stimulus images.
 The owner does not want PsychoPy, dependencies or fonts installed on their machine;
 render verification uses disposable GitHub runners. Font assets may be loaded by
 an experiment process without OS installation. New participant data must not be
-committed. A new PR merge requires the owner's instruction.
+committed.
 
 ## Confirmed presentation requirements
 

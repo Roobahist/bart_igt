@@ -9,6 +9,8 @@ with an injected catalog and theme. See `docs/ui-design.md` for presentation dec
 
 - Preserve column names/order configuration, sparse metadata-first workbook layout,
   task counterbalancing, loss block distributions and burst probabilities.
+- Do not introduce BART lines, frames, floor shadows, scales or gauges that imply
+  a balloon size limit or recommend a collection threshold. Keep status to the side.
 - Do not change scientific defaults, instructions or timing without documenting the
   effect and requiring manual workstation validation before data collection.
 - Keep participant-facing text/fonts/script settings in locale catalogs and inject

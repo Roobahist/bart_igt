@@ -269,19 +269,13 @@ class BartScreen(TaskScreen):
         ledger_x = direction * self.w * 0.30
         self.title = self.text(
             catalog.text("bart_title"),
-            (-direction * self.w * 0.41, self.h * 0.44),
-            size=30,
+            (ledger_x, self.h * 0.44),
+            size=28,
             bold=True,
-            anchorHoriz="right" if catalog.is_rtl else "left",
-            alignText="right" if catalog.is_rtl else "left",
+            width=self.w * 0.27,
         )
         self.trial = self.text(
-            "",
-            (direction * self.w * 0.41, self.h * 0.44),
-            size=18,
-            color="muted",
-            anchorHoriz="left" if catalog.is_rtl else "right",
-            alignText="left" if catalog.is_rtl else "right",
+            "", (ledger_x, self.h * 0.375), size=16, color="muted", width=self.w * 0.27
         )
         self.value_label = self.text(
             catalog.text("bart_value_label"),
@@ -360,7 +354,7 @@ class BartScreen(TaskScreen):
         self.highlight.size = (width, height)
         self.highlight.pos = (self.x - width * 0.22, y + height * 0.20)
         bottom = y - height * 0.59
-        end = min(-self.h * 0.30, bottom - self.h * 0.03)
+        end = max(-self.h * 0.485, min(-self.h * 0.30, bottom - self.h * 0.03))
         self.string.vertices = [
             (
                 self.x + math.sin(t * math.pi * 2) * self.w * 0.007 * (1 - t),

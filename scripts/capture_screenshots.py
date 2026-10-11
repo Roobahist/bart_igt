@@ -184,6 +184,12 @@ def capture(directory):
             "platform": platform.platform(),
             "source_commit": os.environ.get("GITHUB_SHA"),
             "workflow_run": os.environ.get("GITHUB_RUN_ID"),
+            "presentation": {
+                "font": catalog.font,
+                "font_files": catalog.font_files,
+                "theme": main.cfg.ui_theme,
+                "balloon_geometry": main.cfg.bart_presentation,
+            },
             "capture_method": "Window.getMovieFrame(back) before actual Window.flip",
             "screenshots": captures,
             "demo_settings": {

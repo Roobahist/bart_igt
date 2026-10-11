@@ -1,65 +1,57 @@
 # Task presentation decisions
 
-## Direction: a quiet tabletop
+The owner selected a polished game interface and asked for Impeccable's guidance.
+The previous antique serif/paper treatment was rejected. The replacement uses one
+sans family, cool neutral surfaces, matching blue card backs and a coral balloon.
+Impeccable's Operate, distill, typography and craft guidance informed this native
+app revision. Its CLI and web detectors were not installed or run. The durable
+product constraints and visual decisions are in [PRODUCT.md](../PRODUCT.md) and
+[DESIGN.md](../DESIGN.md).
 
-The native task interface uses warm paper, blue-grey printed card backs, serif
-headings and a clay-colored vector balloon. This brings physical task objects
-into focus. It avoids dashboard tiles, oversized choice numerals, casino effects,
-risk gauges and decoration that recommends a strategy. The written instruction
-layouts retain their previous hierarchy and content.
+## Remove implied balloon limits
 
-The UI/UX Pro Max skill's tactile/skeuomorphic guidance informed the material
-metaphor and depth. Its generic marketing page and dark casino palette were not
-applied to this research application. All shapes are native PsychoPy geometry;
-no generated illustration, extra renderer or image dependency is required.
+The previous horizontal header rule sat just above the largest balloon and could
+look like a growth ceiling. Its ground shadow and framed keyboard legends also
+introduced unnecessary physical references. These were removed, along with the
+ledger divider. The balloon now grows on an uninterrupted field. The title, status and plain
+keyboard legends stay to its side. The maximum artwork height uses most of the
+viewport rather than fitting beneath an inset header. No line, frame, scale, gauge, floor or shadow
+is drawn across or beneath its growth region.
 
-## Iowa Gambling Task
+The body, knot and string remain the balloon stimulus. There is no exposed capacity,
+burst prediction or pump recommendation. The native viewport necessarily has an
+edge; the design does not add an inset boundary suggesting a collection threshold.
+This addresses an unwanted cue; it does not prove behavioral neutrality.
 
-- Each deck has the same printed diamond pattern, border and layered paper edges.
-  A label below identifies its original deck number. No deck is visually ranked.
-- A press brightens the inner printed border without moving its hit region.
-  Release reveals a warm light card, with corner numerals and separated gain/loss
-  lines. Labels and signed amounts carry meaning independently of color.
-- The header groups the task name and prompt on one side and the balance on the
-  other. The footer reports choice progress. Balance updates after the configured
-  feedback hold, as before. No net badge or deck history is introduced.
-- The original solid-black front image and ornate back assets remain historical
-  media in the repository; the running task no longer requires them.
+## Card presentation and typography
 
-## Balloon task
+All decks share the same contemporary back mark, colors, shallow stack and target
+size. Their number is identified below. A press changes the inner edge without
+moving the hit area. Release shows a white face with gain/loss labels and signed
+amounts inside the selected card. Zero amounts are explicit and neutral in color.
+The old black-front/ornate-back images remain historical media, not active stimuli.
 
-- A purpose-drawn balloon, curved reflection, knot, string and ground shadow replace
-  the glossy red raster image and separate rope image. The object sits on the left
-  of an open stage; the current reward and collected bank form a ledger on the right.
-  This composition mirrors for Persian. The title/progress and keyboard legends
-  occupy separate rows, outside the balloon's growth region.
-- The balloon grows continuously with successful pumps between configurable
-  viewport-relative minimum and maximum sizes. Both the start and near-maximum
-  states are captured, in addition to the twenty-pump demonstration.
-- The keyboard legends describe the existing pump/collect keys. They are not
-  clickable buttons. No pressure gauge, burst prediction, countdown or pump
-  recommendation is added. Audio and action rules retain their existing settings.
-
-SAM figures, rating order and response rules remain unchanged. Instructions retain
-all their original catalog content. Body fonts and optional `display_font` come
-from the injected locale; `config.ui_theme` supplies colors and
-`config.bart_presentation` supplies balloon dimensions. Shapes and layout scale
-with the viewport. No fonts or experiment dependencies were installed locally.
+English uses bundled Plus Jakarta Sans Regular/Bold. The locale supplies the family
+and file paths; Pyglet registers them only within the experiment process. No OS
+font installation is needed. The font's official source, authors and SIL Open Font
+License ship with the assets. Persian retains its existing IRANSans presentation.
+Written instructions retain their content and layout hierarchy; SAM artwork,
+ordinal choices and response rules remain unchanged.
 
 ## Scientific scope and verification
 
 The loss distributions, gains, deck mapping, counterbalancing, balances, response
-logging, mouse press/release rules, burst hazard and configured feedback duration
-are unchanged. Balloon artwork, initial size, location and visual growth range
-have changed substantially. Card styling and explicit zero-loss feedback also
-change presentation. Review these against the study protocol before collecting
-or comparing data; do not assume equivalence with earlier sessions.
+logging, press/release rules, burst hazard, keyboard controls and configured
+feedback duration are unchanged. Balance still updates after the feedback hold.
+Balloon artwork, initial size, location and visual growth range differ from the
+original experiment. These and the new typography/card presentation must be
+reviewed against the study protocol before data collection or comparisons.
 
-Headless regression tests cover task outcomes and geometric separation at several
-desktop sizes. Real English OpenGL captures come from the hosted workflow using
-scripted input. A seed of 219 permits a separate real-rule BART demonstration to
-reach 127 successful pumps; bursts are not disabled or overridden. These are
-synthetic demonstrations, not human sessions. They cannot validate physical
-input/timing, font shaping or audio/video on the intended workstation. Follow
-[the workstation checklist](workstation-checks.md) in both languages before data
-collection.
+Regression checks cover task outcomes, both layout directions at several desktop
+sizes, and the absence of wide horizontal dividers on BART. Text contrast is
+checked numerically; real OpenGL frames are inspected in a bounded render pass.
+The hosted workflow captures BART at zero, twenty and 127 pumps. Seed 219 permits
+the last demonstration through the real hazard function, without suppressing bursts.
+Captures use synthetic input and cannot validate physical input/timing, Persian
+font shaping, audio/video or participant behavior. Follow the
+[workstation checklist](workstation-checks.md) in both languages before collection.

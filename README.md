@@ -30,7 +30,8 @@ and the [task design decisions](docs/ui-design.md).
 
 Use PsychoPy Standalone **2026.2.4**, or a desktop Python **3.11/3.12** environment
 with PsychoPy installed. Install VLC of the same architecture as your Python
-runtime, and install the supplied IRANSans fonts for Persian rendering. English uses Arial. Check the
+runtime, and install the supplied IRANSans fonts for Persian rendering. English uses bundled Plus Jakarta Sans, loaded within the process without OS
+font installation. Check the
 rights to the fonts and other supplied media before redistributing them.
 
 ```sh
@@ -97,7 +98,8 @@ run(catalog=load_catalog("en"))
 
 `run()` passes this same catalog to IGT, BART and both surveys. Participant-facing
 strings live in `locales/en.json` and `locales/fa.json`; fonts, script direction,
-numeral rendering, optional display font and rating button colors are also catalog data. English uses
+numeral rendering, optional display font, font asset paths and rating button colors
+are also catalog data. English uses
 Latin 1–9 text buttons; Persian keeps the original numeral images. IGT header positions follow the catalog's reading direction. Media are shared; choosing English
 does not translate subtitles or speech embedded in video assets.
 
@@ -171,7 +173,7 @@ interactive desktop experiment.
 ## Architecture and limitations
 
 - `main.py`: participant dialog, presentation, input and session orchestration.
-- `ui.py`: native task screens, printed card stacks, vector balloon stage, instruction layout and injected theme.
+- `ui.py`: native task screens, modern card stacks, an open balloon field, instruction layout and injected theme.
 - `igt.py`, `bart.py`: task randomization, independently testable without PsychoPy.
 - `session.py`: counterbalancing, setting/asset validation, journaling and export.
 - `config.py`: study parameters, language, controls and media paths.

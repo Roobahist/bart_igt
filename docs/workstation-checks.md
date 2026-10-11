@@ -17,7 +17,9 @@ These checks require the actual participant workstation and are not automated CI
    and recorded choices/gains/losses. Test the task skip key.
 6. Review the new vector balloon's initial size, location and visual growth range
    against the study protocol. Verify it stays clear of the ledger, header and key
-   legends from zero through the largest surviving pump count.
+   legends from zero through the largest surviving pump count. Confirm there is
+   no line, frame, floor shadow or gauge suggesting a collection threshold; review
+   the absence of such cues with the study investigator.
    Hold Space in BART with the default setting: one pump per press. Release and
    press again; test banking on Enter release and zero gain after a burst. Skip a
    partly inflated balloon: uncollected reward must not appear in the bank.

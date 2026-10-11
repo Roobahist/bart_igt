@@ -73,9 +73,9 @@ ui_theme = {
 # Visual dimensions are fractions of the task viewport, independent of burst rules.
 bart_presentation = {
     "min_width": 0.12,
-    "max_width": 0.27,
+    "max_width": 0.42,
     "min_height": 0.23,
-    "max_height": 0.52,
+    "max_height": 0.80,
     "center_y": 0.0,
 }
 

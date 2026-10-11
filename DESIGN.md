@@ -16,7 +16,8 @@ or run, and no web detector result is claimed for this native Python application
   the inner edge without moving the target. Feedback stays inside the selected card.
 - The balloon grows on an open, uninterrupted field. No horizontal rule, framing
   band, measuring graphic, floor or fixed shadow is drawn around its growth area.
-  Status and key legends stay to the side. The window edge is the only viewport
+  Title, status and key legends stay to the side. The balloon may occupy most of
+  the viewport height, without an inset stage boundary. The window edge is the only viewport
   boundary; there is no decoration suggesting a burst threshold.
 - Keep written instructions, trial controls, task distributions and feedback hold
   unchanged. No entrance animation or added delay in a timed experiment.
