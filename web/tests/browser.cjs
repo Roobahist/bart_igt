@@ -73,20 +73,29 @@ async function rows(page) {
       if (i<5) await page.locator('[data-deck="1"]:not(:disabled)').waitFor();
     }
     await page.locator('.instructions').waitFor();
+    await capture(page,'english-bart-instructions');
     await page.locator('[data-action=advance]').click();
     await page.locator('.balloon-layout').waitFor();
     await capture(page,'english-bart-start');
+    const fixedGeometry = () => page.evaluate(() => Object.fromEntries(['balloon-neck','balloon-knot','balloon-rope'].map(name => [name,document.querySelector('.'+name).getAttribute('d')])));
+    const attachmentAtStart = await fixedGeometry();
+    const topAtStart = await page.locator('.balloon-body').evaluate(el => el.getBoundingClientRect().top);
+    const bottomAtStart = await page.locator('.balloon-body').evaluate(el => el.getBoundingClientRect().bottom);
     // Avoid bursts in this geometry capture using the boundary RNG sample 0.
     // Separate tests below exercise forced bursts; this fixture is explicit in provenance.
     await page.evaluate(() => {Math.random=() => 0;});
     await page.keyboard.down(' '); await page.waitForTimeout(120); await page.keyboard.up(' ');
     assert.equal((await rows(page)).events.filter(e => e.type==='bart-pump').length,1,'Held Space pumps once');
     for(let i=1;i<20;i++) await page.keyboard.press(' ');
+    assert.deepEqual(await fixedGeometry(),attachmentAtStart,'Inflation must not move or resize neck, knot or rope');
+    assert.ok(await page.locator('.balloon-body').evaluate(el => el.getBoundingClientRect().top) < topAtStart);
+    assert.ok(Math.abs(await page.locator('.balloon-body').evaluate(el => el.getBoundingClientRect().bottom) - bottomAtStart) < .01);
     await capture(page,'english-bart-pumped');
     await page.setViewportSize({width:390,height:844});
     await capture(page,'english-bart-mobile');
     await page.setViewportSize({width:1440,height:900});
     for(let i=20;i<127;i++) await page.keyboard.press(' ');
+    assert.deepEqual(await fixedGeometry(),attachmentAtStart,'Attachments remain fixed even at 127 pumps');
     await capture(page,'english-bart-large');
     await page.keyboard.press('Enter');
     assert.equal((await rows(page)).rows.find(row => row.section==='BART').pumps,127);
@@ -117,6 +126,7 @@ async function rows(page) {
     await survey(page); await skipVideo(page); await survey(page);
     await page.locator('.instructions').waitFor();
     assert.ok((await page.locator('.instruction-heading h1').textContent()).includes('بادکنک'));
+    await capture(page,'persian-bart-instructions-mobile');
     await page.locator('[data-action=advance]').click(); await page.locator('.balloon-layout').waitFor();
     await capture(page,'persian-bart-mobile');
     await page.evaluate(() => window.dispatchEvent(new Event('blur')));
@@ -148,7 +158,7 @@ async function rows(page) {
     assert.deepEqual(errors,[]);
     const provenance = {kind:'Scripted browser demonstrations, not participant sessions',capturedAt:new Date().toISOString(),browser:await browser.version(),runtime:'jsPsych 8.3.0',viewports:[{width:1440,height:900},{width:390,height:844}],seed:7,geometryFixture:'Math.random returns 0 for the 20/127-pump growth captures; .999999 exercises a burst in a separate trial. These are explicitly synthetic fixtures, not natural sampled sessions.',video:'Original neutral video played, paused, replayed, then operator-skipped. Full-duration playback and audio perception are not validated.',checks,errors};
     provenance.sourceFiles = {};
-    for (const name of ['app.js','styles.css','model.js','study-config.json','locales/en.json','locales/fa.json']) provenance.sourceFiles[name] = crypto.createHash('sha256').update(await fs.readFile(path.resolve(__dirname,'../',name))).digest('hex');
+    for (const name of ['app.js','styles.css','model.js','study-config.json','instruction-layouts.json','locales/en.json','locales/fa.json']) provenance.sourceFiles[name] = crypto.createHash('sha256').update(await fs.readFile(path.resolve(__dirname,'../',name))).digest('hex');
     await fs.writeFile(path.join(output,'provenance.json'),JSON.stringify(provenance,null,2)+'\n');
     await context.close();
     console.log('All browser integration checks passed. Captures:',output);

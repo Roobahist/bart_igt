@@ -66,3 +66,15 @@ export function format(template, values = {}) {
     return String(values[key]);
   });
 }
+
+export function instructionSections(text, layout) {
+  const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
+  let cursor = 0;
+  const sections = layout.map(section => ({heading:section.heading, paragraphs:section.paragraphs.map(count => {
+    if (!Number.isInteger(count) || count < 1) throw Error('Invalid instruction layout');
+    const paragraph = lines.slice(cursor,cursor + count).join(' '); cursor += count;
+    return paragraph;
+  })}));
+  if (cursor !== lines.length) throw Error('Instruction layout does not cover the full text');
+  return sections;
+}

@@ -1,6 +1,6 @@
 {
   "kind": "Scripted browser demonstrations, not participant sessions",
-  "capturedAt": "2026-10-11T21:31:47.024Z",
+  "capturedAt": "2026-10-11T21:44:16.376Z",
   "browser": "155.0.8059.39",
   "runtime": "jsPsych 8.3.0",
   "viewports": [
@@ -25,11 +25,12 @@
   ],
   "errors": [],
   "sourceFiles": {
-    "app.js": "c55d0d70328e4aa0dd146fc95475db0169cad7aa2bb43b78392d53873de96d68",
-    "styles.css": "1c0bf7615cb647c8241bcb3c9f4bd72b108c0f72bd7ae5dcad2b52c5a81e131d",
-    "model.js": "c7d5ebef5b14699dd2981bef1fce63173f5f73ad734db97c54de15913fc80c01",
+    "app.js": "95a0d5dd22bef6cf058bfc3d9c222735943ef184b14f633fce2f52f6eb075cd8",
+    "styles.css": "327b709237118688a1281d6a391f2e6ede2cb72a2af472bcdd4c0b34a3f8218d",
+    "model.js": "4aa43e5c2adfebab025cc0182d7cfb918ab193391861bd741525b6d0a4b88bf5",
     "study-config.json": "e96f09e30db5b1758946782b03cad039482787fbf7093ba400e061166b696c1a",
-    "locales/en.json": "990f7157036e741591793d3cae08931b12e3853908d5594e845339d97c00c791",
-    "locales/fa.json": "4de085c7405b35b4942d1b99756fe79b5593100b8b4a62eede501df1805a75f6"
+    "instruction-layouts.json": "7dd0601cc89c3a5721f5b5911fd88782a36f94839c8e34895222268684933a68",
+    "locales/en.json": "b6fc5bb97108d8c1b828bdf16b1e79aed67f0fb00a641c8ee859e1c80b487398",
+    "locales/fa.json": "93811a39fbe75bf12de722bfe1cc1e9f5cfd965d6730804544d5d3a9d0e422bf"
   }
 }

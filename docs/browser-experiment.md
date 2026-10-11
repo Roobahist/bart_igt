@@ -39,6 +39,8 @@ The generated `web/study-config.json` contains configured controls, video, trial
 counts, SAM paths, gains, loss blocks, capacity, reward and timing. Browser colors,
 layout and motion tokens are in `web/styles.css`. Participant-facing browser copy
 is in `web/locales/`; original instructions come from the existing `locales/`.
+`web/instruction-layouts.json` groups their lines into localized sections without
+rewriting or duplicating the original wording; tests verify exact text coverage.
 CI rejects configuration drift. Browser default language is intentionally English.
 No distributions, capacities or recommended thresholds appear on task screens.
 
@@ -57,7 +59,9 @@ repeat-pumping settings instead of silently substituting behavior.
 - BART: conditional hazard `1 / (capacity + 1 - pumps)`, guaranteed burst at
   capacity, same reward and zero reward for exploded or skipped balloons. Completed
   collections remain credited when a later balloon is skipped. No risk gauge,
-  capacity mark, floor shadow or balloon frame is drawn.
+  capacity mark, floor shadow or balloon frame is drawn. The knot, neck and rope
+  stay fixed while the upper body expands upward; attachment paths are tested at
+  zero, twenty and 127 pumps. This is a presentation change, not a probability change.
 - IGT clicks are recorded on activation/release. BART keyboard pumping occurs on
   fresh keydown; keyboard collection and instruction advancement occur on keyup.
   Held keys and key-repeat cannot carry a pump into the next trial. Pointer and

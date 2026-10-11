@@ -55,5 +55,10 @@
   "download_success": "Download prepared. Keep the file before clearing browser data.",
   "fullscreen": "Enter full screen",
   "fullscreen_error": "Full screen could not open. Continue in this window or try again.",
-  "memory_only": "Responses are available in memory. Download them before leaving this page."
+  "memory_only": "Responses are available in memory. Download them before leaving this page.",
+  "instruction_goal": "The task",
+  "instruction_rewards": "Pumping and bursting",
+  "instruction_controls": "Your controls and balances",
+  "instruction_payment": "Payment",
+  "instruction_choices": "Making your choices"
 }

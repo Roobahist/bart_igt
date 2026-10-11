@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { validateConfig, taskOrder, createDecks, burst, csv, journal, format, balloonSize } from '../model.js';
+import { validateConfig, taskOrder, createDecks, burst, csv, journal, format, balloonSize, instructionSections } from '../model.js';
 const config = JSON.parse(readFileSync(new URL('../study-config.json',import.meta.url)));
 test('configuration retains canonical columns and rejects unsafe settings', () => {
   validateConfig(config);
@@ -50,4 +50,18 @@ test('balloon geometry grows continuously without a frame or threshold mark', ()
   const first = balloonSize(0,128), last = balloonSize(128,128);
   assert.ok(first.width < last.width && first.height < last.height);
   assert.ok(Math.abs(last.height - .8) < 1e-12);
+});
+
+test('structured instructions preserve every original word and template argument', () => {
+  const layouts = JSON.parse(readFileSync(new URL('../instruction-layouts.json',import.meta.url)));
+  const normalize = text => text.replace(/\s+/g,' ').trim();
+  for (const code of ['en','fa']) {
+    const messages = JSON.parse(readFileSync(new URL('../../locales/'+code+'.json',import.meta.url))).messages;
+    for (const task of ['bart','igt']) {
+      const text = messages[task+'_instructions'];
+      const sections = instructionSections(text,layouts[code][task]);
+      assert.equal(normalize(sections.flatMap(s => s.paragraphs).join(' ')),normalize(text));
+      assert.throws(() => instructionSections(text,layouts[code][task].slice(1)));
+    }
+  }
 });

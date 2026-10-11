@@ -1,11 +1,11 @@
-import { validateConfig, taskOrder, createDecks, burst, balloonSize, csv, journal, format } from './model.js';
+import { validateConfig, taskOrder, createDecks, burst, balloonSize, csv, journal, format, instructionSections } from './model.js';
 
 const root = document.querySelector('#app');
 const prefix = 'bart-igt:v1:';
 const escapeHTML = value => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>';
 const downloadIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg>';
-let config, catalogs, language, session, jsPsych, deckDraw;
+let config, catalogs, instructionLayouts, language, session, jsPsych, deckDraw;
 let finishPhase, cleanup = () => {}, currentActions = {}, phase = '', busy = false, paused = false, onset = 0;
 let total = 0, balance = 0, bank = 0, trialNumber = 0, pumps = 0;
 let interruptionStarted = null, interruptionTimer = null, videoWasPlaying = false;
@@ -204,8 +204,11 @@ function skipTask(task) {
 function showInstructions(task) {
   const type = task.toLowerCase();
   const values = {trials:config[type].trials,advance_key:keyName('advance'),pump_key:keyName('pump'),collect_key:keyName('collect')};
-  const art = task === 'IGT' ? '<div class="mini-card">1</div><div class="mini-card">2</div>' : '<div class="mini-balloon"></div>';
-  render(`<section class="instructions"><div class="instruction-heading"><h1>${h(type + '_title')}</h1><p>${h('instructions_label')}</p><div class="instruction-art" aria-hidden="true">${art}</div></div><div class="instruction-copy">${h(type + '_instructions',values)}${button('begin_task','advance',true)}</div></section>`);
+  const art = task === 'IGT' ? '<div class="mini-card">1</div><div class="mini-card">2</div>' : '<div class="instruction-balloon-field">' + balloonMarkup() + '</div>';
+  const sections = instructionSections(t(type + '_instructions',values),instructionLayouts[language][type]);
+  const copy = sections.map(section => `<section class="instruction-section${section.heading ? '' : ' instruction-ready'}">${section.heading ? `<h2>${h(section.heading)}</h2>` : ''}${section.paragraphs.map(paragraph => `<p>${escapeHTML(paragraph)}</p>`).join('')}</section>`).join('');
+  render(`<section class="instructions"><div class="instruction-heading"><h1>${h(type + '_title')}</h1><p>${h('instructions_label')}</p><div class="instruction-art" aria-hidden="true">${art}</div></div><div class="instruction-copy">${copy}${button('begin_task','advance',true)}</div></section>`);
+  if (task === 'BART') drawBalloon(root.querySelector('.instruction-balloon-field'),config.bart.capacity*.6,config.bart.capacity);
   currentActions = {advance:complete,skip:() => skipTask(task)};
 }
 function showSurvey(section) {
@@ -272,14 +275,41 @@ function showIgt() {
   }));
 }
 function balloonMarkup() {
-  return `<div class="balloon" id="balloon" aria-hidden="true"><svg viewBox="0 0 200 260" preserveAspectRatio="none"><defs><radialGradient id="rubber" cx=".3" cy=".22" r=".85"><stop offset="0" stop-color="#ffc4b1"/><stop offset=".3" stop-color="#f69b86"/><stop offset=".75" stop-color="#ed7a69"/><stop offset="1" stop-color="#c85b59"/></radialGradient></defs><path fill="url(#rubber)" d="M100 3C43 3 6 43 6 104c0 65 48 128 94 139 46-11 94-74 94-139C194 43 157 3 100 3Z"/><ellipse cx="52" cy="67" rx="12" ry="27" transform="rotate(28 52 67)" fill="#ffe7d7" opacity=".45"/><path d="m100 242-8 13h16Z" fill="#ce655b"/><path d="M100 256c-16 16 18 27 0 45s12 31 2 44" fill="none" stroke="#9ca9bd" stroke-width="1" vector-effect="non-scaling-stroke"/></svg></div>`;
+  return `<svg class="balloon" aria-hidden="true"><defs>
+    <radialGradient id="rubber" cx=".32" cy=".23" r=".78" gradientTransform="translate(0 .03) scale(1 1.08)">
+      <stop offset="0" stop-color="#ffb9a5"/><stop offset=".4" stop-color="#f38a76"/><stop offset=".8" stop-color="#db6c60"/><stop offset="1" stop-color="#ac4b4b"/>
+    </radialGradient>
+    <radialGradient id="reflection"><stop stop-color="#fff0df" stop-opacity=".6"/><stop offset="1" stop-color="#fff0df" stop-opacity="0"/></radialGradient>
+  </defs><path class="balloon-body" fill="url(#rubber)"/><ellipse class="balloon-reflection" fill="url(#reflection)"/>
+    <path class="balloon-neck" fill="#c46458"/><path class="balloon-knot" fill="#d47b67"/>
+    <path class="balloon-rope" fill="none" stroke="#aeb9cb" stroke-width="1.2" stroke-linecap="round"/>
+  </svg>`;
+}
+function drawBalloon(field, count, capacity) {
+  const size = balloonSize(count,capacity);
+  const {width:fieldWidth,height:fieldHeight} = field.getBoundingClientRect();
+  const svg = field.querySelector('.balloon');
+  svg.setAttribute('viewBox',`0 0 ${fieldWidth} ${fieldHeight}`);
+  const x = fieldWidth / 2, anchor = fieldHeight * .86;
+  const w = fieldWidth * size.width, height = fieldHeight * size.height;
+  const bottom = anchor - 8, top = bottom - height;
+  // Only the body contour changes. Its neck joins a fixed knot in field coordinates.
+  svg.querySelector('.balloon-body').setAttribute('d',`M ${x-4} ${bottom}
+    C ${x-w*.16} ${bottom-height*.06} ${x-w*.5} ${bottom-height*.28} ${x-w*.5} ${top+height*.46}
+    C ${x-w*.5} ${top+height*.2} ${x-w*.29} ${top} ${x} ${top}
+    C ${x+w*.29} ${top} ${x+w*.5} ${top+height*.2} ${x+w*.5} ${top+height*.46}
+    C ${x+w*.5} ${bottom-height*.28} ${x+w*.16} ${bottom-height*.06} ${x+4} ${bottom} Z`);
+  const reflection = svg.querySelector('.balloon-reflection');
+  reflection.setAttribute('cx',x-w*.22); reflection.setAttribute('cy',top+height*.27);
+  reflection.setAttribute('rx',w*.08); reflection.setAttribute('ry',height*.17);
+  reflection.setAttribute('transform',`rotate(20 ${x-w*.22} ${top+height*.27})`);
+  svg.querySelector('.balloon-neck').setAttribute('d',`M ${x-4} ${anchor-8} L ${x-3} ${anchor} Q ${x} ${anchor+3} ${x+3} ${anchor} L ${x+4} ${anchor-8} Z`);
+  svg.querySelector('.balloon-knot').setAttribute('d',`M ${x-2} ${anchor+1} Q ${x-5} ${anchor+7} ${x-7} ${anchor+11} Q ${x} ${anchor+8} ${x+7} ${anchor+11} Q ${x+5} ${anchor+6} ${x+2} ${anchor+1} Z`);
+  const ropeLength = Math.min(69,fieldHeight-anchor-18), ropeY = anchor+9;
+  svg.querySelector('.balloon-rope').setAttribute('d',`M ${x} ${ropeY} C ${x-9} ${ropeY+ropeLength*.23} ${x+10} ${ropeY+ropeLength*.38} ${x+1} ${ropeY+ropeLength*.57} S ${x-7} ${ropeY+ropeLength*.87} ${x-1} ${ropeY+ropeLength}`);
 }
 function updateBalloon() {
-  const size = balloonSize(pumps,config.bart.capacity);
-  const field = root.querySelector('.balloon-field'); const rect = field.getBoundingClientRect();
-  const balloon = root.querySelector('#balloon');
-  balloon.style.setProperty('--balloon-w', (rect.width * size.width) + 'px');
-  balloon.style.setProperty('--balloon-h', (rect.height * size.height) + 'px');
+  drawBalloon(root.querySelector('.balloon-field'),pumps,config.bart.capacity);
   document.querySelector('#balloon-value').innerHTML = money(pumps * config.bart.reward);
   document.querySelector('#bank-value').innerHTML = money(bank);
 }
@@ -362,6 +392,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) inter
 window.addEventListener('beforeunload', e => { if (session?.status === 'active') { e.preventDefault(); e.returnValue = ''; } });
 async function load() {
   config = validateConfig(await (await fetch('./study-config.json')).json());
+  instructionLayouts = await (await fetch('./instruction-layouts.json')).json();
   catalogs = {};
   for (const code of ['en','fa']) {
     const [base, browser] = await Promise.all([fetch('../locales/' + code + '.json').then(r => r.json()),fetch('./locales/' + code + '.json').then(r => r.json())]);

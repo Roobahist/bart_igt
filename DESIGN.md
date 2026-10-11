@@ -22,7 +22,9 @@ not run. The implementation is code-led, not matched to an image-generated comp.
 ## Composition and behavior
 
 Setup pairs a large neutral title with a participant form, not promotional claims.
-Instructions separate task identity from full original content. SAM uses light
+Instructions separate task identity from full original content, with localized
+section headings, explicit paragraphs and a bounded reading column. Native select
+arrows use a 16px inset mirrored in RTL. SAM uses light
 image rails to preserve the original drawings with fixed 1–9 value mapping.
 Video remains the visual focus and exposes real playback/error controls.
 
@@ -35,7 +37,10 @@ number mapping. Hover never changes hit target position.
 BART leaves the growth field open. Branding, title, ordinal progress, current value,
 bank and actions stay to the side on desktop. No frame, header divider, floor,
 shadow, gauge, capacity label or pump counter competes with the balloon. Pump and
-Collect use identical sizing, fill and border. The balloon grows immediately;
+Collect use identical sizing, fill and border. The body grows upward from a fixed
+neck and knot; the rope keeps the same position, length and stroke during pumping.
+Body contours are recalculated in field coordinates instead of scaling one SVG.
+The instruction illustration uses the same shaded rendering. The balloon grows immediately;
 there is no delay that alters opportunities to respond. On phone, status precedes
 an open balloon field and equal actions sit at the viewport bottom.
 
