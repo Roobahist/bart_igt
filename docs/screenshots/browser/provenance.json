@@ -1,0 +1,35 @@
+{
+  "kind": "Scripted browser demonstrations, not participant sessions",
+  "capturedAt": "2026-10-11T21:31:47.024Z",
+  "browser": "155.0.8059.39",
+  "runtime": "jsPsych 8.3.0",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "seed": 7,
+  "geometryFixture": "Math.random returns 0 for the 20/127-pump growth captures; .999999 exercises a burst in a separate trial. These are explicitly synthetic fixtures, not natural sampled sessions.",
+  "video": "Original neutral video played, paused, replayed, then operator-skipped. Full-duration playback and audio perception are not validated.",
+  "checks": [
+    "Complete English session: SAM, real video playback/pause/replay, 5 IGT choices, collection, burst, exports",
+    "Held-key suppression; canonical metadata and rows; zero-value collection; 127-pump growth",
+    "Completed session retained after reload with recovery downloads",
+    "Persian RTL; odd-code BART-first order; skip; interruption logging; safe abort retains response",
+    "Storage failure prevents continuation and offers retained in-memory downloads"
+  ],
+  "errors": [],
+  "sourceFiles": {
+    "app.js": "c55d0d70328e4aa0dd146fc95475db0169cad7aa2bb43b78392d53873de96d68",
+    "styles.css": "1c0bf7615cb647c8241bcb3c9f4bd72b108c0f72bd7ae5dcad2b52c5a81e131d",
+    "model.js": "c7d5ebef5b14699dd2981bef1fce63173f5f73ad734db97c54de15913fc80c01",
+    "study-config.json": "e96f09e30db5b1758946782b03cad039482787fbf7093ba400e061166b696c1a",
+    "locales/en.json": "990f7157036e741591793d3cae08931b12e3853908d5594e845339d97c00c791",
+    "locales/fa.json": "4de085c7405b35b4942d1b99756fe79b5593100b8b4a62eede501df1805a75f6"
+  }
+}

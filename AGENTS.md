@@ -1,11 +1,15 @@
 # Working on BART / IGT
 
-This is a Persian/English PsychoPy desktop research experiment, not a web application.
-`main.py` orchestrates SAM → video → SAM → counterbalanced IGT/BART → payout screen.
-`igt.py` and `bart.py` preserve study randomization; `session.py` owns local result
-storage and configuration validation. `localization.py` loads JSON catalogs from `locales/`. Assets and study settings live in the
-existing directories and `config.py`. `main.py` is the single application entry point. `ui.py` holds native task presentation
-with an injected catalog and theme. See `docs/ui-design.md` for presentation decisions.
+Primary interface: bilingual browser research experiment in `web/`, using a
+vendored jsPsych runtime and no build or remote service. `web/model.js` holds the
+scientific rules, `web/app.js` orchestrates session screens and recoverable browser
+results, and `web/styles.css` owns presentation. `config.py` remains the scientific
+source of truth; run `scripts/export_browser_config.py` after changes. Inject locale
+catalogs from `locales/` and `web/locales/`; use canonical stored values.
+
+The optional PsychoPy reference remains in `main.py`, `ui.py`, `bart.py`, `igt.py`,
+`session.py` and `localization.py`. See `docs/browser-experiment.md` for intentional
+platform and protocol differences and `DESIGN.md` for browser presentation.
 
 - Preserve column names/order configuration, sparse metadata-first workbook layout,
   task counterbalancing, loss block distributions and burst probabilities.
@@ -17,9 +21,11 @@ with an injected catalog and theme. See `docs/ui-design.md` for presentation dec
   the same catalog through `run(catalog=...)` into every screen. Preserve template
   keys/parameters across locales and canonical result values. Controls live in config.
 - Keep PsychoPy imports inside `run()` so headless tests can import the modules.
-- Prefer small functions and native PsychoPy/standard-library features over new
-  abstractions or dependencies. Presentation globals are single-session state.
-- Append completed responses through `SessionResults`; retain crash journals.
+- Prefer small functions and browser/native standard features over new dependencies.
+  Do not introduce remote runtime assets or CDN requirements.
+- Desktop responses use `SessionResults`; retain crash journals. Browser responses
+  must save after each completed response, stop on write failure and offer local
+  journal/CSV downloads. Retain prior sessions and label synthetic capture fixtures.
   Never interpolate participant input into file paths or Excel formulas.
 - Never commit new participant data, logs, credentials, caches or virtualenvs.
   Do not delete historical workbooks or rewrite history to remove them autonomously.
@@ -40,3 +46,9 @@ remotely with scripted demonstration input. Use the hosted **English screenshots
 workflow to regenerate them; never install PsychoPy on the owner's machine without
 explicit authorization. Keep provenance and limits with the images; do not present
 scripted captures as physical timing, audio/video or participant-session validation.
+
+Browser checks: `node --test web/tests/model.test.js`, configuration exporter
+`--check`, and Playwright integration in `web/tests/browser.cjs`. Browser screenshot
+CI installs test tooling only on disposable runners. Local tests use existing
+Chrome and bundled tooling; do not install browsers or experiment dependencies
+without explicit authorization. Do not claim physical timing validation.
