@@ -9,6 +9,9 @@ flowchart LR
     Config[config.py: study parameters and language] --> Main
     Catalogs[locales: text, font, script, rating settings] --> Localization[localization.py: injected catalog]
     Localization --> Main
+    Main --> UI[ui.py: native task presentation]
+    Config --> UI
+    Localization --> UI
     Assets[Local images, video, sounds, fonts] --> Main
     Main --> IGT[igt.py: shuffled deck losses]
     Main --> BART[bart.py: burst hazard]

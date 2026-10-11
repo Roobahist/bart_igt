@@ -103,21 +103,22 @@ class IgtScreen(TaskScreen):
                     "", (x, y - height * 0.295), size=30, color="loss", bold=True, width=width * 0.9
                 )
             )
+        direction = -1 if catalog.is_rtl else 1
         self.title = self.text(
             catalog.text("igt_title"),
-            (-self.w * 0.425, self.h * 0.39),
+            (-direction * self.w * 0.425, self.h * 0.39),
             size=28,
             bold=True,
-            anchorHoriz="left",
-            alignText="left",
+            anchorHoriz="right" if catalog.is_rtl else "left",
+            alignText="right" if catalog.is_rtl else "left",
         )
         self.balance = self.text(
             "",
-            (self.w * 0.425, self.h * 0.39),
+            (direction * self.w * 0.425, self.h * 0.39),
             size=23,
             bold=True,
-            anchorHoriz="right",
-            alignText="right",
+            anchorHoriz="left" if catalog.is_rtl else "right",
+            alignText="left" if catalog.is_rtl else "right",
         )
         self.divider = self.rect((0, self.h * 0.315), self.w * 0.85, 1, fill="border")
         self.prompt = self.text(catalog.text("igt_choose"), (0, self.h * 0.225), size=24)

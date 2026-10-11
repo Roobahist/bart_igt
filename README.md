@@ -19,9 +19,12 @@ hardware timing, audio, video playback or a complete participant session.
 
 ![English IGT card selection](docs/screenshots/igt-choice.png)
 
+![English IGT selected card outcome](docs/screenshots/igt-feedback.png)
+
 ![English BART balloon play](docs/screenshots/bart-balloon.png)
 
-See the [full screenshot gallery and capture details](docs/screenshots/README.md).
+See the [full screenshot gallery and capture details](docs/screenshots/README.md)
+and the [task design decisions](docs/ui-design.md).
 
 ## Setup and running
 
@@ -55,6 +58,7 @@ Paths are resolved against the repository, so launching from another directory
 works. Absolute paths are also accepted.
 
 - `language`: `"fa"` (default Persian) or `"en"` (English), selecting a JSON catalog.
+- `ui_theme`: shared task surface, border, text and outcome colors.
 - `controls`: PsychoPy key names for advance, pump, collect, skip, replay, pause and abort;
   instructions display the configured keys.
 - `which_video`: 1 negative, 2 positive, 3 neutral.
@@ -94,7 +98,7 @@ run(catalog=load_catalog("en"))
 strings live in `locales/en.json` and `locales/fa.json`; fonts, script direction,
 numeral rendering and rating button colors are also catalog data. English uses
 Latin 1–9 text buttons; Persian keeps the original numeral images. IGT label/value
-positions follow the catalog's reading direction. Media are shared; choosing English
+header positions follow the catalog's reading direction. Media are shared; choosing English
 does not translate subtitles or speech embedded in video assets.
 
 Edit a catalog to change wording, or load one from a separate directory with
@@ -151,7 +155,7 @@ python -m pip install -r requirements-dev.txt
 ruff check .
 ruff format --check .
 python -m unittest discover -s tests -v
-python -m compileall -q main.py bart.py igt.py config.py session.py localization.py
+python -m compileall -q main.py bart.py igt.py config.py session.py localization.py ui.py
 pip-audit --strict --no-deps --disable-pip -r requirements-results.txt
 ```
 
@@ -167,6 +171,7 @@ interactive desktop experiment.
 ## Architecture and limitations
 
 - `main.py`: participant dialog, presentation, input and session orchestration.
+- `ui.py`: native task screens, card reveal, shared instruction layout and injected theme.
 - `igt.py`, `bart.py`: task randomization, independently testable without PsychoPy.
 - `session.py`: counterbalancing, setting/asset validation, journaling and export.
 - `config.py`: study parameters, language, controls and media paths.
