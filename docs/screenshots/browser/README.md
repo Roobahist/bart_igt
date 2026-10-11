@@ -37,7 +37,7 @@ tests an explosion. These are not natural sampled behavioral results.
 
 ## Reproduce
 
-`web/tests/browser.cjs` uses Playwright with the locally served repository.
+`tests/browser/experiment.test.cjs` uses Playwright with the locally served repository.
 The **Browser checks** workflow installs test tooling on an ephemeral runner,
 tests the actual flow and uploads captures. Source code does not require those
 test dependencies to run. Provenance travels with regenerated images; desktop

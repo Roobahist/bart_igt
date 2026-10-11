@@ -3,11 +3,13 @@ __pycache__/
 .venv/
 .ruff_cache/
 .pytest_cache/
-output/
+/results/
+/output/
 *.log
 .env
 .DS_Store
 node_modules/
-web/test-results/
+tests/browser/test-results/
 docs/screenshots/browser/*.jsonl
 docs/screenshots/browser/*.xlsx
+/work/

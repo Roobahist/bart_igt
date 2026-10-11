@@ -9,7 +9,7 @@ agent instructions existed in the repository. No GitHub issues were returned.
 
 | Finding | Priority | Resolution |
 |---|---|---|
-| `main.py` raises IndentationError at line 855 | Critical | Restored runnable orchestration; compile checks cover the single main.py entry point |
+| `apps/desktop/experiment.py` raises IndentationError at line 855 | Critical | Restored runnable orchestration; compile checks cover the single apps/desktop/experiment.py entry point |
 | Removed pandas `DataFrame.append` used for every response | High | Replaced direct pandas use with journaled records and openpyxl export |
 | Broad catch around tasks reruns both after an execution error | High | Convert code separately; execute ordered tasks once; propagate failures |
 | Only shutdown saves data; failed window creation can mask original error | High | Per-response durable journal and independent cleanup/export |
@@ -29,7 +29,7 @@ agent instructions existed in the repository. No GitHub issues were returned.
 Persian survey labels, media, task order rules, default settings and workbook
 columns/layout remain. Invalid task inputs now raise ValueError instead of returning
 strings or failing inside random calculations. IGT decks reset for a new session.
-Results use new filenames and an additional journal. The accidental `main (2).py` duplicate has been removed; launch with `main.py`.
+Results use new filenames and an additional journal. The accidental `main (2).py` duplicate has been removed; launch with `apps/desktop/experiment.py`.
 The canonical window remains 1200×675 with the current video controls. Sound feedback is asynchronous and polling yields briefly. RT values are
 monotonic elapsed trial time; these changes require manual study validation.
 
@@ -63,7 +63,7 @@ native VLC and keyboard APIs and Python support. References:
 [audio](https://psychopy.org/api/sound/playback.html),
 [package metadata](https://pypi.org/project/psychopy/2026.2.4/).
 
-Baseline: three characterization tests passed; `main.py` failed compilation.
+Baseline: three characterization tests passed; `apps/desktop/experiment.py` failed compilation.
 Final headless suite: 25 tests passed on Python 3.14.7 and Python 3.12.14, including task distribution,
 input transitions, safe skip/burst/collect, task failure without rerun, dialog
 cancel, failed window creation, failed export, formula safety, journal recovery
@@ -82,8 +82,8 @@ merge is performed by this modernization.
 
 ## Bilingual presentation follow-up
 
-Added `localization.py` with an injectable `LanguageCatalog` and JSON catalogs in
-`locales/en.json` and `locales/fa.json`. `run(catalog=...)` passes the catalog to every
+Added `apps/desktop/localization.py` with an injectable `LanguageCatalog` and JSON catalogs in
+`study/locales/en.json` and `study/locales/fa.json`. `run(catalog=...)` passes the catalog to every
 screen. Text, fonts, script direction, rating rendering and button colors live in
 catalog data. Instructions receive configured trial counts/keys/amounts. Keyboard
 actions are configured in `config.controls`; Persian remains the default.

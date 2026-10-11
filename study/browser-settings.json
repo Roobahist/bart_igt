@@ -1,0 +1,143 @@
+{
+  "schema": 1,
+  "language": "en",
+  "columns": [
+    "subjectName",
+    "subjectCode",
+    "gender",
+    "age",
+    "handedness",
+    "video",
+    "section",
+    "arousal",
+    "pleasure",
+    "trial",
+    "choice",
+    "gain",
+    "loss",
+    "RT",
+    "pumps",
+    "explosion"
+  ],
+  "controls": {
+    "advance": "space",
+    "pump": "space",
+    "collect": "return",
+    "skip": "i",
+    "replay": "r",
+    "pause": "p",
+    "abort": "escape"
+  },
+  "fullscreen": false,
+  "fixationMs": 500.0,
+  "exchangeRate": 4200,
+  "video": {
+    "name": "neutral",
+    "path": "../../assets/videos/neutral.mp4"
+  },
+  "igt": {
+    "skip": false,
+    "trials": 5,
+    "initialBalance": 20,
+    "feedbackMs": 2000,
+    "decks": [
+      {
+        "gain": 1,
+        "losses": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1.5,
+          2,
+          2.5,
+          3,
+          3.5
+        ]
+      },
+      {
+        "gain": 1,
+        "losses": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          12.5
+        ]
+      },
+      {
+        "gain": 0.5,
+        "losses": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0.25,
+          0.5,
+          0.5,
+          0.5,
+          0.75
+        ]
+      },
+      {
+        "gain": 0.5,
+        "losses": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2.5
+        ]
+      }
+    ]
+  },
+  "bart": {
+    "skip": false,
+    "trials": 5,
+    "capacity": 128,
+    "reward": 0.05,
+    "repeatPumps": false,
+    "sounds": {
+      "blow": {
+        "enabled": false,
+        "path": "../../assets/sounds/blow.mp3"
+      },
+      "burst": {
+        "enabled": true,
+        "path": "../../assets/sounds/bang.mp3"
+      },
+      "collect": {
+        "enabled": false,
+        "path": "../../assets/sounds/collect.mp3"
+      }
+    }
+  },
+  "sam": {
+    "arousal": [
+      "../../assets/images/sam/arousal/1.jpg",
+      "../../assets/images/sam/arousal/2.jpg",
+      "../../assets/images/sam/arousal/3.jpg",
+      "../../assets/images/sam/arousal/4.jpg",
+      "../../assets/images/sam/arousal/5.jpg"
+    ],
+    "pleasure": [
+      "../../assets/images/sam/pleasure/1.jpg",
+      "../../assets/images/sam/pleasure/2.jpg",
+      "../../assets/images/sam/pleasure/3.jpg",
+      "../../assets/images/sam/pleasure/4.jpg",
+      "../../assets/images/sam/pleasure/5.jpg"
+    ]
+  }
+}

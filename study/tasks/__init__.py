@@ -1,0 +1,1 @@
+"""Desktop scientific task rules."""

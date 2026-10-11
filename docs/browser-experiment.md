@@ -1,6 +1,6 @@
 # Browser experiment
 
-The primary interface is now a build-free browser application in `web/`, using
+The primary interface is now a build-free browser application in `apps/browser/`, using
 vendored jsPsych 8.3.0 for the session timeline and custom screens for the study.
 PsychoPy remains an optional desktop reference implementation. Neither PsychoPy,
 VLC, Node packages nor OS fonts are needed to use the browser experiment.
@@ -13,8 +13,8 @@ From the repository root, use Python's existing static file server:
 python3 -m http.server 8765 --bind 127.0.0.1
 ```
 
-Open http://127.0.0.1:8765/web/ in a current desktop browser. If Node is already
-available, `node web/server.js` provides an alternative local server with media
+Open http://127.0.0.1:8765/apps/browser/ in a current desktop browser. If Node is already
+available, `node scripts/serve-browser.mjs` provides an alternative local server with media
 range requests. Do not open `index.html` as a file: JSON catalogs require HTTP.
 Keep the server local. No hosted services, account, credentials or deployment are
 required. All page resources are served from this repository. The original
@@ -22,24 +22,24 @@ videos, SAM images and sounds are reused; no media or experiment software is
 installed on the operating system.
 
 English is the browser presentation default. Choose Persian before starting, or
-open `web/?lang=fa`. The selected language cannot change during a session.
+open `apps/browser/?lang=fa`. The selected language cannot change during a session.
 Catalogs are injected into every screen. Canonical categories and result columns
 are unchanged across languages. Persian uses the existing bundled font files.
 Check the existing media and font redistribution rights before publishing.
 
 ## Configuration
 
-`config.py` remains the scientific source of truth. After editing it, regenerate:
+`study/settings.py` remains the scientific source of truth. After editing it, regenerate:
 
 ```sh
-python3 scripts/export_browser_config.py
+python3 scripts/export_study_settings.py
 ```
 
-The generated `web/study-config.json` contains configured controls, video, trial
+The generated `study/browser-settings.json` contains configured controls, video, trial
 counts, SAM paths, gains, loss blocks, capacity, reward and timing. Browser colors,
-layout and motion tokens are in `web/styles.css`. Participant-facing browser copy
-is in `web/locales/`; original instructions come from the existing `locales/`.
-`web/instruction-layouts.json` groups their lines into localized sections without
+layout and motion tokens are in `apps/browser/styles.css`. Participant-facing browser copy
+is in `apps/browser/locales/`; original instructions come from the existing `study/locales/`.
+`apps/browser/instruction-layouts.json` groups their lines into localized sections without
 rewriting or duplicating the original wording; tests verify exact text coverage.
 CI rejects configuration drift. Browser default language is intentionally English.
 No distributions, capacities or recommended thresholds appear on task screens.
@@ -101,7 +101,7 @@ CSV keeps the original column order and sparse metadata-first rows; strings that
 could become spreadsheet formulas are prefixed with an apostrophe. JSONL preserves
 exact canonical values and can use the existing optional Excel recovery tool:
 
-Run `session.py` with the downloaded journal path as its sole argument, using the
+Run `python -m apps.desktop.results` with the downloaded journal path as its sole argument from the repository root, using the
 existing optional results dependencies. Browser use itself requires no Python packages. JSON session details
 include the configuration, language, environment, input modes and interruptions;
 additional audit events do not alter canonical CSV/XLSX columns.
@@ -114,8 +114,8 @@ No results are uploaded anywhere. No real participant data is committed.
 
 ## Verification
 
-`node --test web/tests/model.test.js` checks distributions, burst boundaries,
-ordering, export safety, configuration and locale parity. `web/tests/browser.cjs`
+`node --test tests/browser/study-model.test.js` checks distributions, burst boundaries,
+ordering, export safety, configuration and locale parity. `tests/browser/experiment.test.cjs`
 uses Playwright for complete scripted sessions, actual video playback/pause/replay,
 RTL/mobile rendering, key repeat, recovery, abort and failed-storage behavior.
 Playwright and its browser are installed only on disposable CI runners; locally,

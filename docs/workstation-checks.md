@@ -6,7 +6,7 @@ These checks require the actual participant workstation and are not automated CI
    keyboard backend, audio backend, MP3 decoding and installed IRANSans fonts.
    Confirm Persian shaping and English LTR rendering, endpoint labels and all survey numbers at the intended
    resolution/fullscreen setting. Review media redistribution rights separately.
-2. Run `main.py` from PsychoPy Coder and from a different working directory.
+2. Run `apps/desktop/experiment.py` from PsychoPy Coder and from a different working directory.
    Cancel the participant dialog: no new output should appear.
 3. Use a test subject with an even code and then an odd code. Confirm task ordering,
    two required survey ratings, configured trial counts and correct metadata.
