@@ -18,7 +18,7 @@
     "fontPersian": "IRANSans",
     "radius": 14
   },
-  "source": "web/styles.css",
+  "source": "apps/browser/styles.css",
   "guidance": "Impeccable references read manually; CLI unavailable",
   "constraints": [
     "equal deck styling",

@@ -1,1 +1,0 @@
-{"name":"bart-igt-browser","private":true,"type":"module","scripts":{"test":"node --test tests/model.test.js","serve":"node server.js"},"engines":{"node":">=20"}}

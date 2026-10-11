@@ -1,0 +1,31 @@
+name: Browser checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - run: node --test tests/browser/study-model.test.js
+      - run: python3 scripts/export_study_settings.py --check
+      - name: Install isolated browser test tooling
+        run: |
+          npm install --no-save --package-lock=false playwright@1.62.1
+          npx playwright install --with-deps chrome
+      - name: Test browser experiment and capture real screens
+        run: |
+          node scripts/serve-browser.mjs > /tmp/bart-browser-server.log 2>&1 &
+          BROWSER_CHANNEL=chrome EXPERIMENT_URL=http://127.0.0.1:8765/apps/browser/ CAPTURE_DIR=/tmp/browser-captures node tests/browser/experiment.test.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: browser-captures
+          path: /tmp/browser-captures
+          retention-days: 7
